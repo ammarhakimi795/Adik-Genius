@@ -7,7 +7,7 @@
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts (Fredoka & Quicksand) & FontAwesome Icons -->
+  <!-- Google Fonts & FontAwesome -->
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
@@ -20,24 +20,15 @@
     .font-fun {
       font-family: 'Fredoka One', cursive;
     }
-    /* Animasi Terapung & Gelembung */
     @keyframes float {
       0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-10px) rotate(2deg); }
+      50% { transform: translateY(-8px) rotate(1deg); }
     }
     .animate-float {
       animation: float 4s ease-in-out infinite;
     }
     .bounce-hover:active {
-      transform: scale(0.92);
-    }
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 10px;
+      transform: scale(0.93);
     }
   </style>
 
@@ -47,60 +38,58 @@
 </head>
 <body class="min-h-screen flex justify-center items-center p-2 sm:p-6">
 
-  <!-- FRAME UTAMA MOBILE / TABLET -->
+  <!-- FRAME UTAMA MOBILE -->
   <div class="w-full max-w-md bg-amber-50 min-h-[844px] rounded-[40px] shadow-2xl flex flex-col justify-between overflow-hidden relative border-8 border-white">
 
     <!-- 1. SKRIN UTAMA (HOME) -->
     <div id="screen-home" class="flex-1 flex flex-col p-5 overflow-y-auto justify-between">
       
-      <!-- HEAD BANNER KANAK-KANAK BIJAK -->
+      <!-- HEADER KARIKATUR -->
       <div class="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 rounded-3xl p-6 text-center text-white shadow-xl relative overflow-hidden animate-float">
-        <!-- Hiasan Belon & Bintang -->
         <span class="absolute top-2 left-3 text-2xl">🎈</span>
         <span class="absolute bottom-2 right-3 text-2xl">⭐</span>
 
-        <!-- Karikatur Kanak-Kanak Bijak (Bukan Singa) -->
         <div class="w-28 h-28 bg-white rounded-full flex items-center justify-center border-4 border-yellow-200 shadow-inner mx-auto mb-3 overflow-hidden">
           <span class="text-6xl">🧑‍🎓</span>
         </div>
 
         <h1 class="font-fun text-3xl tracking-wide drop-shadow-md text-white">ADIK GENIUS</h1>
         <p class="font-bold text-xs bg-white/30 backdrop-blur-md px-4 py-1 rounded-full inline-block mt-1">
-          Dunia Belajar Ceria & Interaktif! 🌈
+          Belajar Perlahan & Jelas 🌈
         </p>
       </div>
 
-      <!-- BANNER UCAPAN MESRA AI -->
+      <!-- BANNER UCAPAN -->
       <div class="bg-white border-4 border-pink-300 rounded-3xl p-4 shadow-md text-center flex items-center gap-3">
         <span class="text-4xl animate-bounce">🎨</span>
         <div class="text-left flex-1">
           <h2 class="font-fun text-pink-600 text-sm">Hai Adik Comel! 🌟</h2>
-          <p class="text-xs font-bold text-slate-600">Jom teroka modul belajar di bawah bersama Cikgu AI!</p>
+          <p class="text-xs font-bold text-slate-600">Pilih modul di bawah untuk mula belajar secara berslaid!</p>
         </div>
       </div>
 
-      <!-- KAD MODUL PARTITION -->
+      <!-- MENU UTAMA -->
       <div class="space-y-3">
-        <!-- MODUL 1: MEMBACA (A - Z) -->
-        <button onclick="openMembaca()" class="w-full bg-gradient-to-r from-pink-400 to-rose-500 hover:opacity-95 text-white rounded-3xl p-4 shadow-lg border-b-4 border-rose-700 bounce-hover flex items-center gap-4">
+        <!-- MODUL MEMBACA -->
+        <button onclick="openMembaca()" class="w-full bg-gradient-to-r from-pink-400 to-rose-500 text-white rounded-3xl p-4 shadow-lg border-b-4 border-rose-700 bounce-hover flex items-center gap-4">
           <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-3xl">🔤</div>
           <div class="text-left">
-            <span class="font-fun text-lg block leading-tight">MEMBACA (A - Z)</span>
-            <span class="text-[11px] font-semibold bg-black/10 px-2 py-0.5 rounded-full inline-block mt-0.5">Kenal Huruf & Bunyi 🅰️</span>
+            <span class="font-fun text-lg block leading-tight">KENAL HURUF (SLAID A - Z)</span>
+            <span class="text-[11px] font-semibold bg-black/10 px-2 py-0.5 rounded-full inline-block mt-0.5">Slaid Huruf & Ejaan Perlahan 🅰️</span>
           </div>
         </button>
 
-        <!-- MODUL 2: MENGIRA (1 - 100) -->
-        <button onclick="openMengira()" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:opacity-95 text-white rounded-3xl p-4 shadow-lg border-b-4 border-teal-700 bounce-hover flex items-center gap-4">
+        <!-- MODUL MENGIRA -->
+        <button onclick="openMengira()" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 text-white rounded-3xl p-4 shadow-lg border-b-4 border-teal-700 bounce-hover flex items-center gap-4">
           <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-3xl">🔢</div>
           <div class="text-left">
-            <span class="font-fun text-lg block leading-tight">MENGIRA (1 - 100)</span>
-            <span class="text-[11px] font-semibold bg-black/10 px-2 py-0.5 rounded-full inline-block mt-0.5">Kira Nombor Ceria 🎯</span>
+            <span class="font-fun text-lg block leading-tight">MENGIRA (SLAID 1 - 100)</span>
+            <span class="text-[11px] font-semibold bg-black/10 px-2 py-0.5 rounded-full inline-block mt-0.5">Slaid Nombor & Ejaan Huruf 🎯</span>
           </div>
         </button>
 
-        <!-- MODUL 3: TANYA CIKGU AI -->
-        <button onclick="showScreen('chat')" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:opacity-95 text-white rounded-3xl p-4 shadow-lg border-b-4 border-indigo-800 bounce-hover flex items-center gap-4">
+        <!-- CHAT AI TUTOR -->
+        <button onclick="showScreen('chat')" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-3xl p-4 shadow-lg border-b-4 border-indigo-800 bounce-hover flex items-center gap-4">
           <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-3xl">🤖</div>
           <div class="text-left">
             <span class="font-fun text-lg block leading-tight">TANYA CIKGU AI</span>
@@ -109,56 +98,98 @@
         </button>
       </div>
 
-      <!-- FOOTER BANNER -->
       <div class="text-center text-xs font-bold text-slate-400 py-1">
         ADIK GENIUS · MALAYSIA 🇲🇾
       </div>
     </div>
 
 
-    <!-- 2. SKRIN MEMBACA (HURUF A - Z) -->
-    <div id="screen-membaca" class="flex-1 flex-col hidden bg-amber-50 p-4 overflow-y-auto">
-      <div class="flex justify-between items-center mb-4 bg-white p-3 rounded-2xl shadow-sm border-2 border-pink-200">
+    <!-- 2. SKRIN SLAID MEMBACA (HURUF A - Z) -->
+    <div id="screen-membaca" class="flex-1 flex-col hidden bg-amber-50 p-4 justify-between">
+      <!-- HEADER -->
+      <div class="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border-2 border-pink-200">
         <div class="flex items-center gap-2">
           <span class="text-2xl">🔤</span>
-          <div>
-            <h2 class="font-fun text-lg text-pink-600 leading-tight">Membaca (A - Z)</h2>
-            <p class="text-[10px] text-slate-500 font-bold">Tekan kad untuk sebutan mesra! 🔊</p>
-          </div>
+          <h2 class="font-fun text-lg text-pink-600 leading-tight">Belajar Huruf</h2>
         </div>
         <button onclick="showScreen('home')" class="bg-pink-100 text-pink-600 text-xs px-3 py-1.5 rounded-xl font-bold border border-pink-300">
           🏠 Utama
         </button>
       </div>
 
-      <div id="alphabetGrid" class="grid grid-cols-3 gap-3 pb-6">
-        <!-- Dynamic Alphabet Cards Generated Here -->
+      <!-- SLAID CONTENT CONTAINER -->
+      <div class="bg-white border-4 border-pink-300 rounded-3xl p-6 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[380px] relative">
+        <div class="absolute top-4 right-4 bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-fun" id="letterTracker">
+          1 / 26
+        </div>
+
+        <div class="text-7xl font-fun text-pink-500 mb-2" id="letterDisplay">A a</div>
+        <div class="text-7xl my-3" id="letterEmoji">🍎</div>
+        <div class="text-2xl font-fun text-slate-800 mb-1" id="letterWord">Epal</div>
+        <div class="text-sm font-bold text-pink-400 tracking-widest uppercase bg-pink-50 px-4 py-1.5 rounded-full border border-pink-200" id="letterSpell">E - P - A - L</div>
+
+        <!-- BUTTON SEBUT SUARA -->
+        <button onclick="speakCurrentLetter()" class="mt-5 bg-pink-500 hover:bg-pink-600 text-white font-fun px-5 py-2 rounded-full text-xs shadow-md bounce-hover flex items-center gap-2">
+          🔊 Dengar Sebutan Perlahan
+        </button>
+      </div>
+
+      <!-- KAWALAN NAVIGASI SLAID -->
+      <div class="flex gap-3">
+        <button onclick="prevLetter()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-fun py-3.5 rounded-2xl text-sm shadow">
+          ⬅️ Sebelumnya
+        </button>
+        <button onclick="nextLetter()" class="flex-1 bg-pink-500 hover:bg-pink-600 text-white font-fun py-3.5 rounded-2xl text-sm shadow bounce-hover">
+          Seterusnya ➡️
+        </button>
       </div>
     </div>
 
 
-    <!-- 3. SKRIN MENGIRA (NOMBOR 1 - 100) -->
-    <div id="screen-mengira" class="flex-1 flex-col hidden bg-amber-50 p-4 overflow-y-auto">
-      <div class="flex justify-between items-center mb-4 bg-white p-3 rounded-2xl shadow-sm border-2 border-emerald-200">
+    <!-- 3. SKRIN SLAID MENGIRA (NOMBOR 1 - 100 + EJAAN) -->
+    <div id="screen-mengira" class="flex-1 flex-col hidden bg-amber-50 p-4 justify-between">
+      <!-- HEADER -->
+      <div class="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border-2 border-emerald-200">
         <div class="flex items-center gap-2">
           <span class="text-2xl">🔢</span>
-          <div>
-            <h2 class="font-fun text-lg text-emerald-600 leading-tight">Mengira (1 - 100)</h2>
-            <p class="text-[10px] text-slate-500 font-bold">Tekan nombor untuk mengira! 🎈</p>
-          </div>
+          <h2 class="font-fun text-lg text-emerald-600 leading-tight">Belajar Nombor</h2>
         </div>
         <button onclick="showScreen('home')" class="bg-emerald-100 text-emerald-600 text-xs px-3 py-1.5 rounded-xl font-bold border border-emerald-300">
           🏠 Utama
         </button>
       </div>
 
-      <div id="numbersGrid" class="grid grid-cols-5 gap-2 pb-6">
-        <!-- Dynamic Number Cards Generated Here -->
+      <!-- SLAID CONTENT CONTAINER -->
+      <div class="bg-white border-4 border-emerald-300 rounded-3xl p-6 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[380px] relative">
+        <div class="absolute top-4 right-4 bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-fun" id="numberTracker">
+          1 / 100
+        </div>
+
+        <div class="text-8xl font-fun text-emerald-500 mb-2" id="numberDisplay">1</div>
+        <div class="text-2xl font-fun text-slate-800 mb-2" id="numberSpellText">Satu</div>
+        <div class="text-xs font-bold text-emerald-600 bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-200 max-w-xs" id="numberLetterSpell">
+          Ejaan Huruf: S - A - T - U
+        </div>
+
+        <!-- BUTTON SEBUT SUARA -->
+        <button onclick="speakCurrentNumber()" class="mt-6 bg-emerald-500 hover:bg-emerald-600 text-white font-fun px-5 py-2 rounded-full text-xs shadow-md bounce-hover flex items-center gap-2">
+          🔊 Dengar Sebutan Perlahan
+        </button>
+      </div>
+
+      <!-- KAWALAN NAVIGASI SLAID -->
+      <div class="flex gap-3">
+        <button onclick="prevNumber()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-fun py-3.5 rounded-2xl text-sm shadow">
+          ⬅️ Sebelumnya
+        </button>
+        <button onclick="nextNumber()" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-fun py-3.5 rounded-2xl text-sm shadow bounce-hover">
+          Seterusnya ➡️
+        </button>
       </div>
     </div>
 
 
-    <!-- 4. SKRIN CHAT CIKGU AI MESRA -->
+    <!-- 4. SKRIN CHAT CIKGU AI -->
     <div id="screen-chat" class="flex-1 flex-col hidden bg-amber-50 p-4">
       <div class="flex justify-between items-center mb-3 bg-white p-3 rounded-2xl shadow-sm border-2 border-purple-200">
         <div class="flex items-center gap-2">
@@ -170,16 +201,14 @@
         </button>
       </div>
 
-      <!-- Dialogue Chat Area -->
       <div id="chatHistory" class="flex-1 bg-white rounded-3xl p-4 overflow-y-auto mb-3 space-y-3 border-2 border-purple-100 shadow-inner">
         <div class="bg-yellow-100 text-slate-800 p-3 rounded-2xl text-xs font-semibold max-w-[85%] border border-yellow-200">
-          Hai Adik comel! 🎈 Cikgu AI kat sini. Tanyakan soalan apa sahaja, Cikgu sedia bantu! 😊
+          Hai Adik comel! 🎈 Tanyakan soalan apa sahaja, Cikgu AI sedia bantu! 😊
         </div>
       </div>
 
-      <!-- Input Bar -->
       <div class="flex gap-2 bg-white p-2 rounded-full border-2 border-purple-200 shadow-sm">
-        <input type="text" id="userInput" placeholder="Tulis soalan di sini... (Cth: Lembu makan apa?)" class="flex-1 bg-transparent px-4 py-1.5 text-xs font-semibold focus:outline-none">
+        <input type="text" id="userInput" placeholder="Tulis soalan di sini..." class="flex-1 bg-transparent px-4 py-1.5 text-xs font-semibold focus:outline-none">
         <button onclick="askCikgu()" class="bg-purple-500 hover:bg-purple-600 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow-md bounce-hover">
           Hantar 🚀
         </button>
@@ -203,19 +232,18 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // SINTESIS SUARA AI MESRA KANAK-KANAK (PITCH TINGGI & RAMAH)
-    function speakText(text) {
+    // SEBUTAN SUARA PERLAHAN & JELAS KASIH KANAK-KANAK
+    function speakTextSlow(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ms-MY';
-        utterance.pitch = 1.45; // Pitch tinggi & mesra kanak-kanak
-        utterance.rate = 0.88;  // Sebutan jelas & tidak terlalu pantas
+        utterance.pitch = 1.35; // Suara ramah kanak-kanak
+        utterance.rate = 0.65;  // Kelajuan perlahan supaya mudah diikuti
         window.speechSynthesis.speak(utterance);
       }
     }
 
-    // TUKAR SKRIN
     function showScreen(screenId) {
       document.querySelectorAll('#screen-home, #screen-membaca, #screen-mengira, #screen-chat').forEach(el => {
         el.classList.add('hidden');
@@ -226,72 +254,137 @@
       active.classList.add('flex');
     }
 
-    // MODUL MEMBACA (A - Z LENGKAP DENGAN PERKATAAN MESRA)
+    // ----------------------------------------------------
+    // DATA & LOGIK SLAID MEMBACA (A - Z)
+    // ----------------------------------------------------
     const alphabetData = [
-      { letter: 'A', word: 'Ayam', emoji: '🐓' },
-      { letter: 'B', word: 'Bola', emoji: '⚽' },
-      { letter: 'C', word: 'Cawan', emoji: '☕' },
-      { letter: 'D', word: 'Dadu', emoji: '🎲' },
-      { letter: 'E', word: 'Epal', emoji: '🍎' },
-      { letter: 'F', word: 'Feri', emoji: '⛴️' },
-      { letter: 'G', word: 'Gajah', emoji: '🐘' },
-      { letter: 'H', word: 'Hujan', emoji: '🌧️' },
-      { letter: 'I', word: 'Ikan', emoji: '🐟' },
-      { letter: 'J', word: 'Jam', emoji: '⏰' },
-      { letter: 'K', word: 'Kucing', emoji: '🐱' },
-      { letter: 'L', word: 'Lilin', emoji: '🕯️' },
-      { letter: 'M', word: 'Matahari', emoji: '☀️' },
-      { letter: 'N', word: 'Nasi', emoji: '🍚' },
-      { letter: 'O', word: 'Oren', emoji: '🍊' },
-      { letter: 'P', word: 'Pisang', emoji: '🍌' },
-      { letter: 'Q', word: 'Quran', emoji: '📖' },
-      { letter: 'R', word: 'Roti', emoji: '🍞' },
-      { letter: 'S', word: 'Semut', emoji: '🐜' },
-      { letter: 'T', word: 'Topi', emoji: '🧢' },
-      { letter: 'U', word: 'Ular', emoji: '🐍' },
-      { letter: 'V', word: 'Van', emoji: '🚐' },
-      { letter: 'W', word: 'Wau', emoji: '🪁' },
-      { letter: 'X', word: 'Xilofon', emoji: '🎼' },
-      { letter: 'Y', word: 'Yo-yo', emoji: '🪀' },
-      { letter: 'Z', word: 'Zirafah', emoji: '🦒' }
+      { letter: 'A', word: 'Ayam', emoji: '🐓', spell: 'A - Y - A - M' },
+      { letter: 'B', word: 'Bola', emoji: '⚽', spell: 'B - O - L - A' },
+      { letter: 'C', word: 'Cawan', emoji: '☕', spell: 'C - A - W - A - N' },
+      { letter: 'D', word: 'Dadu', emoji: '🎲', spell: 'D - A - D - U' },
+      { letter: 'E', word: 'Epal', emoji: '🍎', spell: 'E - P - A - L' },
+      { letter: 'F', word: 'Feri', emoji: '⛴️', spell: 'F - E - R - I' },
+      { letter: 'G', word: 'Gajah', emoji: '🐘', spell: 'G - A - J - A - H' },
+      { letter: 'H', word: 'Hujan', emoji: '🌧️', spell: 'H - U - J - A - N' },
+      { letter: 'I', word: 'Ikan', emoji: '🐟', spell: 'I - K - A - N' },
+      { letter: 'J', word: 'Jam', emoji: '⏰', spell: 'J - A - M' },
+      { letter: 'K', word: 'Kucing', emoji: '🐱', spell: 'K - U - C - I - N - G' },
+      { letter: 'L', word: 'Lilin', emoji: '🕯️', spell: 'L - I - L - I - N' },
+      { letter: 'M', word: 'Matahari', emoji: '☀️', spell: 'M - A - T - A - H - A - R - I' },
+      { letter: 'N', word: 'Nasi', emoji: '🍚', spell: 'N - A - S - I' },
+      { letter: 'O', word: 'Oren', emoji: '🍊', spell: 'O - R - E - N' },
+      { letter: 'P', word: 'Pisang', emoji: '🍌', spell: 'P - I - S - A - N - G' },
+      { letter: 'Q', word: 'Quran', emoji: '📖', spell: 'Q - U - R - A - N' },
+      { letter: 'R', word: 'Roti', emoji: '🍞', spell: 'R - O - T - I' },
+      { letter: 'S', word: 'Semut', emoji: '🐜', spell: 'S - E - M - U - T' },
+      { letter: 'T', word: 'Topi', emoji: '🧢', spell: 'T - O - P - I' },
+      { letter: 'U', word: 'Ular', emoji: '🐍', spell: 'U - L - A - R' },
+      { letter: 'V', word: 'Van', emoji: '🚐', spell: 'V - A - N' },
+      { letter: 'W', word: 'Wau', emoji: '🪁', spell: 'W - A - U' },
+      { letter: 'X', word: 'Xilofon', emoji: '🎼', spell: 'X - I - L - O - F - O - N' },
+      { letter: 'Y', word: 'Yo-yo', emoji: '🪀', spell: 'Y - O - Y - O' },
+      { letter: 'Z', word: 'Zirafah', emoji: '🦒', spell: 'Z - I - R - A - F - A - H' }
     ];
 
+    let currentLetterIdx = 0;
+
     function openMembaca() {
-      const container = document.getElementById('alphabetGrid');
-      if (container.children.length === 0) {
-        alphabetData.forEach(item => {
-          const btn = document.createElement('button');
-          btn.className = "bg-white border-2 border-pink-200 hover:border-pink-400 p-3 rounded-2xl shadow-sm bounce-hover flex flex-col items-center justify-center text-center";
-          btn.innerHTML = `
-            <span class="text-3xl font-fun text-pink-600">${item.letter} ${item.letter.toLowerCase()}</span>
-            <span class="text-3xl my-1">${item.emoji}</span>
-            <span class="text-[11px] font-bold text-slate-600">${item.word}</span>
-          `;
-          btn.onclick = () => speakText(`Huruf ${item.letter}... ${item.word}!`);
-          container.appendChild(btn);
-        });
-      }
+      currentLetterIdx = 0;
+      updateLetterSlide();
       showScreen('membaca');
-      speakText('Jom belajar kenal huruf A sampai Z bersama-sama!');
     }
 
-    // MODUL MENGIRA (1 - 100)
-    function openMengira() {
-      const container = document.getElementById('numbersGrid');
-      if (container.children.length === 0) {
-        for (let i = 1; i <= 100; i++) {
-          const btn = document.createElement('button');
-          btn.className = "bg-white border-2 border-emerald-200 hover:border-emerald-400 text-emerald-600 font-fun text-sm p-2.5 rounded-xl shadow-sm bounce-hover text-center";
-          btn.innerText = i;
-          btn.onclick = () => speakText(`Nombor ${i}`);
-          container.appendChild(btn);
-        }
+    function updateLetterSlide() {
+      const item = alphabetData[currentLetterIdx];
+      document.getElementById('letterTracker').innerText = `${currentLetterIdx + 1} / 26`;
+      document.getElementById('letterDisplay').innerText = `${item.letter} ${item.letter.toLowerCase()}`;
+      document.getElementById('letterEmoji').innerText = item.emoji;
+      document.getElementById('letterWord').innerText = item.word;
+      document.getElementById('letterSpell').innerText = item.spell;
+
+      speakCurrentLetter();
+    }
+
+    function speakCurrentLetter() {
+      const item = alphabetData[currentLetterIdx];
+      speakTextSlow(`Huruf ${item.letter}... ${item.word}... Dieja... ${item.spell.replaceAll('-', ' ')}`);
+    }
+
+    function nextLetter() {
+      if (currentLetterIdx < alphabetData.length - 1) {
+        currentLetterIdx++;
+        updateLetterSlide();
       }
-      showScreen('mengira');
-      speakText('Jom mengira nombor 1 sampai 100!');
     }
 
-    // SOAL JAWAB AI RAMAH KANAK-KANAK
+    function prevLetter() {
+      if (currentLetterIdx > 0) {
+        currentLetterIdx--;
+        updateLetterSlide();
+      }
+    }
+
+
+    // ----------------------------------------------------
+    // LOGIK PENUKAR NOMBOR KE EJAAN PERKATAAN MALAYSIA (1 - 100)
+    // ----------------------------------------------------
+    function numberToWords(num) {
+      const sa = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "lapan", "sembilan", "sepuluh", "sebelas"];
+      if (num <= 11) return sa[num];
+      if (num < 20) return sa[num - 10] + " belas";
+      if (num < 100) {
+        let tens = Math.floor(num / 10);
+        let remainder = num % 10;
+        return sa[tens] + " puluh " + sa[remainder];
+      }
+      if (num === 100) return "seratus";
+      return num.toString();
+    }
+
+    let currentNumberVal = 1;
+
+    function openMengira() {
+      currentNumberVal = 1;
+      updateNumberSlide();
+      showScreen('mengira');
+    }
+
+    function updateNumberSlide() {
+      const wordText = numberToWords(currentNumberVal).trim();
+      const spelledLetters = wordText.replace(/\s+/g, '').toUpperCase().split('').join(' - ');
+
+      document.getElementById('numberTracker').innerText = `${currentNumberVal} / 100`;
+      document.getElementById('numberDisplay').innerText = currentNumberVal;
+      document.getElementById('numberSpellText').innerText = wordText.toUpperCase();
+      document.getElementById('numberLetterSpell').innerText = `Ejaan Huruf: ${spelledLetters}`;
+
+      speakCurrentNumber();
+    }
+
+    function speakCurrentNumber() {
+      const wordText = numberToWords(currentNumberVal).trim();
+      const spelledLetters = wordText.replace(/\s+/g, '').toUpperCase().split('').join(' ');
+      speakTextSlow(`Nombor ${currentNumberVal}... ${wordText}... Dieja... ${spelledLetters}`);
+    }
+
+    function nextNumber() {
+      if (currentNumberVal < 100) {
+        currentNumberVal++;
+        updateNumberSlide();
+      }
+    }
+
+    function prevNumber() {
+      if (currentNumberVal > 1) {
+        currentNumberVal--;
+        updateNumberSlide();
+      }
+    }
+
+
+    // ----------------------------------------------------
+    // CHAT CIKGU AI
+    // ----------------------------------------------------
     function askCikgu() {
       const inputEl = document.getElementById('userInput');
       const question = inputEl.value.trim();
@@ -299,25 +392,20 @@
 
       const chatHistory = document.getElementById('chatHistory');
 
-      // Mesej Soalan
       const userBubble = document.createElement('div');
       userBubble.className = "bg-purple-500 text-white p-2.5 rounded-2xl text-xs font-semibold max-w-[85%] ml-auto shadow-sm";
       userBubble.innerText = question;
       chatHistory.appendChild(userBubble);
 
-      // Simpan Log ke Firebase
       db.ref('questions').push({ question: question, timestamp: Date.now() });
       inputEl.value = '';
 
-      // Jawapan AI Mesra
       setTimeout(() => {
-        let reply = "Wah, hebatnya soalan Adik! 🌟 Jom belajar lagi bersama Cikgu AI!";
+        let reply = "Wah, soalan yang bagus! Jom belajar mengeja dan mengira bersama Cikgu!";
         const qLower = question.toLowerCase();
 
-        if (qLower.includes('lembu')) reply = "Lembu bunyinya Mooo~! 🐮 Lembu suka makan rumput hijau. Adik suka minum susu lembu tak? 🥛";
-        else if (qLower.includes('kucing')) reply = "Kucing bunyinya Meow~ Meow~! 🐱 Kucing ada bulu yang sangat lembut!";
-        else if (qLower.includes('nama')) reply = "Nama Cikgu ialah Cikgu AI Genius! Rakan belajar Adik yang paling ramah!";
-        else if (qLower.includes('1') || qLower.includes('kira')) reply = "Satu, dua, tiga! 🎈 Mengira itu mudah dan sangat menyeronokkan!";
+        if (qLower.includes('lembu')) reply = "Lembu bunyinya Mooo~! 🐮 L-E-M-B-U!";
+        else if (qLower.includes('kucing')) reply = "Kucing bunyinya Meow~! 🐱 K-U-C-I-N-G!";
 
         const aiBubble = document.createElement('div');
         aiBubble.className = "bg-yellow-100 text-slate-800 p-2.5 rounded-2xl text-xs font-semibold max-w-[85%] border border-yellow-200 shadow-sm";
@@ -325,7 +413,7 @@
         chatHistory.appendChild(aiBubble);
 
         chatHistory.scrollTop = chatHistory.scrollHeight;
-        speakText(reply);
+        speakTextSlow(reply);
       }, 600);
     }
   </script>
