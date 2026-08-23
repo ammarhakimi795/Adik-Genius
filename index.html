@@ -124,9 +124,9 @@
         </div>
 
         <div class="text-7xl font-fun text-pink-500 mb-2" id="letterDisplay">A a</div>
-        <div class="text-7xl my-3" id="letterEmoji">🍎</div>
-        <div class="text-2xl font-fun text-slate-800 mb-1" id="letterWord">Epal</div>
-        <div class="text-sm font-bold text-pink-400 tracking-widest uppercase bg-pink-50 px-4 py-1.5 rounded-full border border-pink-200" id="letterSpell">E - P - A - L</div>
+        <div class="text-7xl my-3" id="letterEmoji">🐓</div>
+        <div class="text-2xl font-fun text-slate-800 mb-1" id="letterWord">Ayam</div>
+        <div class="text-sm font-bold text-pink-400 tracking-widest uppercase bg-pink-50 px-4 py-1.5 rounded-full border border-pink-200" id="letterSpell">A - Y - A - M</div>
 
         <!-- BUTTON SEBUT SUARA -->
         <button onclick="speakCurrentLetter()" class="mt-5 bg-pink-500 hover:bg-pink-600 text-white font-fun px-5 py-2 rounded-full text-xs shadow-md bounce-hover flex items-center gap-2">
@@ -232,14 +232,14 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // SEBUTAN SUARA PERLAHAN & JELAS KASIH KANAK-KANAK
+    // SEBUTAN SUARA PERLAHAN DENGAN SEBUTAN HURUF DEMI HURUF
     function speakTextSlow(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ms-MY';
-        utterance.pitch = 1.35; // Suara ramah kanak-kanak
-        utterance.rate = 0.65;  // Kelajuan perlahan supaya mudah diikuti
+        utterance.pitch = 1.3; 
+        utterance.rate = 0.55;  // Kelajuan perlahan khas untuk sebutan huruf & kata
         window.speechSynthesis.speak(utterance);
       }
     }
@@ -254,9 +254,7 @@
       active.classList.add('flex');
     }
 
-    // ----------------------------------------------------
-    // DATA & LOGIK SLAID MEMBACA (A - Z)
-    // ----------------------------------------------------
+    // DATA SLAID MEMBACA DENGAN PERKATAAN DIPILIH (Ayam, Bola, Ular, Quran, Zirafah dll)
     const alphabetData = [
       { letter: 'A', word: 'Ayam', emoji: '🐓', spell: 'A - Y - A - M' },
       { letter: 'B', word: 'Bola', emoji: '⚽', spell: 'B - O - L - A' },
@@ -307,7 +305,9 @@
 
     function speakCurrentLetter() {
       const item = alphabetData[currentLetterIdx];
-      speakTextSlow(`Huruf ${item.letter}... ${item.word}... Dieja... ${item.spell.replaceAll('-', ' ')}`);
+      // Format sebutan mengikut siri abjad yang diberikan
+      const spelledLetters = item.spell.replaceAll('-', ' ');
+      speakTextSlow(`${item.letter}. ${item.word}. ${spelledLetters}.`);
     }
 
     function nextLetter() {
@@ -324,10 +324,7 @@
       }
     }
 
-
-    // ----------------------------------------------------
-    // LOGIK PENUKAR NOMBOR KE EJAAN PERKATAAN MALAYSIA (1 - 100)
-    // ----------------------------------------------------
+    // LOGIK EJAAN PERKATAAN NOMBOR MALAYSIA (1 - 100)
     function numberToWords(num) {
       const sa = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "lapan", "sembilan", "sepuluh", "sebelas"];
       if (num <= 11) return sa[num];
@@ -364,7 +361,7 @@
     function speakCurrentNumber() {
       const wordText = numberToWords(currentNumberVal).trim();
       const spelledLetters = wordText.replace(/\s+/g, '').toUpperCase().split('').join(' ');
-      speakTextSlow(`Nombor ${currentNumberVal}... ${wordText}... Dieja... ${spelledLetters}`);
+      speakTextSlow(`${currentNumberVal}. ${wordText}. ${spelledLetters}.`);
     }
 
     function nextNumber() {
@@ -381,10 +378,7 @@
       }
     }
 
-
-    // ----------------------------------------------------
     // CHAT CIKGU AI
-    // ----------------------------------------------------
     function askCikgu() {
       const inputEl = document.getElementById('userInput');
       const question = inputEl.value.trim();
@@ -401,11 +395,12 @@
       inputEl.value = '';
 
       setTimeout(() => {
-        let reply = "Wah, soalan yang bagus! Jom belajar mengeja dan mengira bersama Cikgu!";
+        let reply = "Wah, soalan yang bagus! Jom belajar mengeja dan mengira bersama Cikgu AI!";
         const qLower = question.toLowerCase();
 
-        if (qLower.includes('lembu')) reply = "Lembu bunyinya Mooo~! 🐮 L-E-M-B-U!";
-        else if (qLower.includes('kucing')) reply = "Kucing bunyinya Meow~! 🐱 K-U-C-I-N-G!";
+        if (qLower.includes('ayam')) reply = "Ayam! A Y A M! 🐓 Ayam jantan berkokok kukuruyuk!";
+        else if (qLower.includes('bola')) reply = "Bola! B O L A! ⚽ Adik suka main bola tak?";
+        else if (qLower.includes('ular')) reply = "Ular! U L A R! 🐍 Ular S-S-S!";
 
         const aiBubble = document.createElement('div');
         aiBubble.className = "bg-yellow-100 text-slate-800 p-2.5 rounded-2xl text-xs font-semibold max-w-[85%] border border-yellow-200 shadow-sm";
