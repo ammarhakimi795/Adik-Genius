@@ -3,30 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adik Genius - KSSR Malaysia 🌟</title>
+  <title>Adik Genius 🎈</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts & FontAwesome -->
+  <!-- Google Fonts (Fredoka & Quicksand) & FontAwesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <style>
     body {
       font-family: 'Quicksand', sans-serif;
-      background-color: #f1f5f9;
+      background: linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #3b82f6 100%);
       user-select: none;
     }
     .font-fun {
       font-family: 'Fredoka One', cursive;
     }
-    .bg-pattern {
-      background-color: #e2e8f0;
-      background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
-      background-size: 16px 16px;
+    /* Animasi Terapung & Gelembung */
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-10px) rotate(2deg); }
+    }
+    .animate-float {
+      animation: float 4s ease-in-out infinite;
     }
     .bounce-hover:active {
-      transform: scale(0.95);
+      transform: scale(0.92);
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
     }
   </style>
 
@@ -34,244 +45,142 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
-<body class="bg-pattern min-h-screen flex justify-center items-start sm:py-6">
+<body class="min-h-screen flex justify-center items-center p-2 sm:p-6">
 
-  <!-- MOBILE CONTAINER FRAME -->
-  <div class="w-full max-w-md bg-white min-h-screen sm:min-h-[844px] sm:rounded-[36px] shadow-2xl flex flex-col justify-between overflow-hidden relative border-4 border-slate-200">
+  <!-- FRAME UTAMA MOBILE / TABLET -->
+  <div class="w-full max-w-md bg-amber-50 min-h-[844px] rounded-[40px] shadow-2xl flex flex-col justify-between overflow-hidden relative border-8 border-white">
 
-    <!-- TOP GLOBAL HEADER / STATUS BAR -->
-    <div id="topHeader" class="bg-sky-500 p-3 text-white flex justify-between items-center shadow-md hidden">
-      <div class="flex items-center gap-1.5 bg-sky-600/60 px-3 py-1 rounded-full text-xs font-bold">
-        <span class="text-yellow-300">⭐</span>
-        <span id="userStars">2</span>
-        <span class="text-xs font-normal">HANA</span>
-      </div>
-      <div class="flex items-center gap-1 text-red-500 text-base" id="heartsContainer">
-        ❤️ ❤️ ❤️
-      </div>
-      <div class="flex items-center gap-2">
-        <button onclick="speakText('Hai Adik Genius! Jom belajar dengan Cikgu!')" class="bg-sky-600/60 p-1.5 rounded-lg text-xs font-bold">🔊</button>
-        <button onclick="showScreen('home')" class="bg-sky-600/60 p-1.5 rounded-lg text-xs">🏠</button>
-      </div>
-    </div>
+    <!-- 1. SKRIN UTAMA (HOME) -->
+    <div id="screen-home" class="flex-1 flex flex-col p-5 overflow-y-auto justify-between">
+      
+      <!-- HEAD BANNER KANAK-KANAK BIJAK -->
+      <div class="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 rounded-3xl p-6 text-center text-white shadow-xl relative overflow-hidden animate-float">
+        <!-- Hiasan Belon & Bintang -->
+        <span class="absolute top-2 left-3 text-2xl">🎈</span>
+        <span class="absolute bottom-2 right-3 text-2xl">⭐</span>
 
-    <!-- 1. HOME / MAIN NAVIGATION SCREEN -->
-    <div id="screen-home" class="flex-1 flex flex-col p-5 overflow-y-auto">
-      <!-- BRAND LOGO HEADER -->
-      <div class="bg-gradient-to-r from-amber-400 via-orange-400 to-red-400 rounded-3xl p-6 text-center text-white shadow-lg mb-4 flex flex-col items-center">
-        <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center border-4 border-yellow-200 shadow-md mb-2">
-          <div class="text-center">
-            <span class="text-3xl block leading-none">🦁</span>
-            <span class="font-fun text-xs text-orange-600 block mt-1">ADIK</span>
-            <span class="font-fun text-xs text-blue-600 block leading-none">GENIUS</span>
-          </div>
+        <!-- Karikatur Kanak-Kanak Bijak (Bukan Singa) -->
+        <div class="w-28 h-28 bg-white rounded-full flex items-center justify-center border-4 border-yellow-200 shadow-inner mx-auto mb-3 overflow-hidden">
+          <span class="text-6xl">🧑‍🎓</span>
         </div>
-        <div class="bg-white/30 backdrop-blur-md px-4 py-1.5 rounded-full mt-2">
-          <p class="font-bold text-xs sm:text-sm">Aplikasi Belajar Mesra Kanak-Kanak! 🚀</p>
-        </div>
-      </div>
 
-      <!-- INSTRUCTION BOX -->
-      <div class="bg-white border-2 border-slate-200 rounded-2xl p-3 text-center shadow-sm mb-4">
-        <p class="text-xs sm:text-sm font-bold text-slate-700">
-          Pilih modul aktiviti di bawah untuk mula belajar! 🎈
+        <h1 class="font-fun text-3xl tracking-wide drop-shadow-md text-white">ADIK GENIUS</h1>
+        <p class="font-bold text-xs bg-white/30 backdrop-blur-md px-4 py-1 rounded-full inline-block mt-1">
+          Dunia Belajar Ceria & Interaktif! 🌈
         </p>
       </div>
 
-      <!-- PARTITION MODULE BUTTONS -->
-      <div class="space-y-3 pb-6">
+      <!-- BANNER UCAPAN MESRA AI -->
+      <div class="bg-white border-4 border-pink-300 rounded-3xl p-4 shadow-md text-center flex items-center gap-3">
+        <span class="text-4xl animate-bounce">🎨</span>
+        <div class="text-left flex-1">
+          <h2 class="font-fun text-pink-600 text-sm">Hai Adik Comel! 🌟</h2>
+          <p class="text-xs font-bold text-slate-600">Jom teroka modul belajar di bawah bersama Cikgu AI!</p>
+        </div>
+      </div>
+
+      <!-- KAD MODUL PARTITION -->
+      <div class="space-y-3">
         <!-- MODUL 1: MEMBACA (A - Z) -->
-        <button onclick="openMembaca()" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:opacity-95 text-white rounded-2xl p-4 shadow-md text-center bounce-hover">
-          <span class="font-fun text-lg block">🔤 MEMBACA (A - Z)</span>
-          <span class="bg-white/20 text-xs px-3 py-1 rounded-full font-bold inline-block mt-1">KENAL HURUF 🅰️</span>
+        <button onclick="openMembaca()" class="w-full bg-gradient-to-r from-pink-400 to-rose-500 hover:opacity-95 text-white rounded-3xl p-4 shadow-lg border-b-4 border-rose-700 bounce-hover flex items-center gap-4">
+          <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-3xl">🔤</div>
+          <div class="text-left">
+            <span class="font-fun text-lg block leading-tight">MEMBACA (A - Z)</span>
+            <span class="text-[11px] font-semibold bg-black/10 px-2 py-0.5 rounded-full inline-block mt-0.5">Kenal Huruf & Bunyi 🅰️</span>
+          </div>
         </button>
 
         <!-- MODUL 2: MENGIRA (1 - 100) -->
-        <button onclick="openMengira()" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:opacity-95 text-white rounded-2xl p-4 shadow-md text-center bounce-hover">
-          <span class="font-fun text-lg block">🔢 MENGIRA (1 - 100)</span>
-          <span class="bg-white/20 text-xs px-3 py-1 rounded-full font-bold inline-block mt-1">BELAJAR NOMBOR 🎯</span>
+        <button onclick="openMengira()" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 hover:opacity-95 text-white rounded-3xl p-4 shadow-lg border-b-4 border-teal-700 bounce-hover flex items-center gap-4">
+          <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-3xl">🔢</div>
+          <div class="text-left">
+            <span class="font-fun text-lg block leading-tight">MENGIRA (1 - 100)</span>
+            <span class="text-[11px] font-semibold bg-black/10 px-2 py-0.5 rounded-full inline-block mt-0.5">Kira Nombor Ceria 🎯</span>
+          </div>
         </button>
 
-        <!-- MODUL 3: KUIZ MATEMATIK (KSSR) -->
-        <button onclick="showTopics()" class="w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:opacity-95 text-white rounded-2xl p-4 shadow-md text-center bounce-hover">
-          <span class="font-fun text-lg block">🏆 KUIZ MATEMATIK</span>
-          <span class="bg-white/20 text-xs px-3 py-1 rounded-full font-bold inline-block mt-1">JOM MAIN KUIZ 🎮</span>
+        <!-- MODUL 3: TANYA CIKGU AI -->
+        <button onclick="showScreen('chat')" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:opacity-95 text-white rounded-3xl p-4 shadow-lg border-b-4 border-indigo-800 bounce-hover flex items-center gap-4">
+          <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-3xl">🤖</div>
+          <div class="text-left">
+            <span class="font-fun text-lg block leading-tight">TANYA CIKGU AI</span>
+            <span class="text-[11px] font-semibold bg-black/10 px-2 py-0.5 rounded-full inline-block mt-0.5">Suara Ramah Kanak-Kanak 💬</span>
+          </div>
         </button>
+      </div>
 
-        <!-- MODUL 4: CHAT CIKGU GENIUS -->
-        <button onclick="showScreen('chat')" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:opacity-95 text-white rounded-2xl p-4 shadow-md text-center bounce-hover">
-          <span class="font-fun text-lg block">🤖 TANYA CIKGU GENIUS</span>
-          <span class="bg-white/20 text-xs px-3 py-1 rounded-full font-bold inline-block mt-1">SUARA MESRA AI 💬</span>
-        </button>
+      <!-- FOOTER BANNER -->
+      <div class="text-center text-xs font-bold text-slate-400 py-1">
+        ADIK GENIUS · MALAYSIA 🇲🇾
       </div>
     </div>
 
 
-    <!-- 2. PARTITION: MEMBACA (HURUF A - Z) -->
-    <div id="screen-membaca" class="flex-1 flex-col hidden bg-slate-50 p-4 overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <div>
-          <h2 class="font-fun text-xl text-pink-600">Modul Membaca</h2>
-          <p class="text-xs text-slate-500 font-bold">Tekan huruf untuk mendengar sebutan mesra! 🔊</p>
+    <!-- 2. SKRIN MEMBACA (HURUF A - Z) -->
+    <div id="screen-membaca" class="flex-1 flex-col hidden bg-amber-50 p-4 overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 bg-white p-3 rounded-2xl shadow-sm border-2 border-pink-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🔤</span>
+          <div>
+            <h2 class="font-fun text-lg text-pink-600 leading-tight">Membaca (A - Z)</h2>
+            <p class="text-[10px] text-slate-500 font-bold">Tekan kad untuk sebutan mesra! 🔊</p>
+          </div>
         </div>
-        <button onclick="showScreen('home')" class="bg-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-bold">Kembali</button>
+        <button onclick="showScreen('home')" class="bg-pink-100 text-pink-600 text-xs px-3 py-1.5 rounded-xl font-bold border border-pink-300">
+          🏠 Utama
+        </button>
       </div>
 
-      <div id="alphabetGrid" class="grid grid-cols-4 gap-2.5 pb-6">
-        <!-- Generated Dynamically A to Z -->
+      <div id="alphabetGrid" class="grid grid-cols-3 gap-3 pb-6">
+        <!-- Dynamic Alphabet Cards Generated Here -->
       </div>
     </div>
 
 
-    <!-- 3. PARTITION: MENGIRA (NOMBOR 1 - 100) -->
-    <div id="screen-mengira" class="flex-1 flex-col hidden bg-slate-50 p-4 overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <div>
-          <h2 class="font-fun text-xl text-emerald-600">Modul Mengira</h2>
-          <p class="text-xs text-slate-500 font-bold">Tekan nombor dari 1 hingga 100! 🔢</p>
+    <!-- 3. SKRIN MENGIRA (NOMBOR 1 - 100) -->
+    <div id="screen-mengira" class="flex-1 flex-col hidden bg-amber-50 p-4 overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 bg-white p-3 rounded-2xl shadow-sm border-2 border-emerald-200">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🔢</span>
+          <div>
+            <h2 class="font-fun text-lg text-emerald-600 leading-tight">Mengira (1 - 100)</h2>
+            <p class="text-[10px] text-slate-500 font-bold">Tekan nombor untuk mengira! 🎈</p>
+          </div>
         </div>
-        <button onclick="showScreen('home')" class="bg-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-bold">Kembali</button>
+        <button onclick="showScreen('home')" class="bg-emerald-100 text-emerald-600 text-xs px-3 py-1.5 rounded-xl font-bold border border-emerald-300">
+          🏠 Utama
+        </button>
       </div>
 
       <div id="numbersGrid" class="grid grid-cols-5 gap-2 pb-6">
-        <!-- Generated Dynamically 1 to 100 -->
+        <!-- Dynamic Number Cards Generated Here -->
       </div>
     </div>
 
 
-    <!-- 4. KUIZ TOPIC SELECTION SCREEN -->
-    <div id="screen-topics" class="flex-1 flex-col hidden bg-slate-50">
-      <div class="p-4 flex justify-between items-center bg-white border-b border-slate-200">
-        <div>
-          <h2 class="font-fun text-xl text-slate-800">Topik Kuiz</h2>
-          <p class="text-[11px] text-slate-500 font-bold">Kumpul bintang untuk buka lencana hebat!</p>
-        </div>
-        <button onclick="showScreen('home')" class="bg-slate-200 text-slate-700 text-xs px-3 py-1.5 rounded-lg font-bold">Kembali</button>
-      </div>
-
-      <div class="p-4 grid grid-cols-2 gap-3 overflow-y-auto flex-1 pb-6">
-        <div onclick="openTopic('Nombor Bulat')" class="bg-sky-400 text-white p-4 rounded-2xl shadow-sm bounce-hover cursor-pointer h-28 flex flex-col justify-between">
-          <div class="flex justify-between items-start">
-            <span class="font-fun text-sm leading-tight">NOMBOR BULAT</span>
-            <span class="text-xl">🔢</span>
-          </div>
-          <span class="text-[10px] bg-black/10 px-2 py-0.5 rounded w-max font-bold">20 Soalan</span>
-        </div>
-
-        <div onclick="openTopic('Tambah')" class="bg-emerald-400 text-white p-4 rounded-2xl shadow-sm bounce-hover cursor-pointer h-28 flex flex-col justify-between">
-          <div class="flex justify-between items-start">
-            <span class="font-fun text-sm leading-tight">TAMBAH</span>
-            <span class="text-2xl">➕</span>
-          </div>
-          <span class="text-[10px] bg-black/10 px-2 py-0.5 rounded w-max font-bold">20 Soalan</span>
-        </div>
-
-        <div onclick="openTopic('Tolak')" class="bg-amber-400 text-white p-4 rounded-2xl shadow-sm bounce-hover cursor-pointer h-28 flex flex-col justify-between">
-          <div class="flex justify-between items-start">
-            <span class="font-fun text-sm leading-tight">TOLAK</span>
-            <span class="text-2xl">➖</span>
-          </div>
-          <span class="text-[10px] bg-black/10 px-2 py-0.5 rounded w-max font-bold">20 Soalan</span>
-        </div>
-
-        <div onclick="openTopic('Pecahan')" class="bg-cyan-400 text-white p-4 rounded-2xl shadow-sm bounce-hover cursor-pointer h-28 flex flex-col justify-between">
-          <div class="flex justify-between items-start">
-            <span class="font-fun text-sm leading-tight">PECAHAN</span>
-            <span class="text-2xl">🍰</span>
-          </div>
-          <span class="text-[10px] bg-black/10 px-2 py-0.5 rounded w-max font-bold">20 Soalan</span>
-        </div>
-
-        <div onclick="openTopic('Wang')" class="bg-purple-400 text-white p-4 rounded-2xl shadow-sm bounce-hover cursor-pointer h-28 flex flex-col justify-between">
-          <div class="flex justify-between items-start">
-            <span class="font-fun text-sm leading-tight">WANG</span>
-            <span class="text-2xl">💰</span>
-          </div>
-          <span class="text-[10px] bg-black/10 px-2 py-0.5 rounded w-max font-bold">20 Soalan</span>
-        </div>
-
-        <div onclick="openTopic('Masa & Waktu')" class="bg-pink-500 text-white p-4 rounded-2xl shadow-sm bounce-hover cursor-pointer h-28 flex flex-col justify-between">
-          <div class="flex justify-between items-start">
-            <span class="font-fun text-sm leading-tight">MASA & WAKTU</span>
-            <span class="text-2xl">🕒</span>
-          </div>
-          <span class="text-[10px] bg-black/10 px-2 py-0.5 rounded w-max font-bold">20 Soalan</span>
-        </div>
-      </div>
-    </div>
-
-
-    <!-- 5. TOPIC PREVIEW SCREEN -->
-    <div id="screen-start" class="flex-1 flex-col hidden bg-slate-50 justify-center items-center p-6 text-center">
-      <div class="w-28 h-28 bg-slate-200 rounded-full flex items-center justify-center text-5xl mb-4 shadow-inner">
-        🕒
-      </div>
-      <h3 id="previewTitle" class="text-2xl font-fun text-slate-800 mb-1">Masa & Waktu</h3>
-      <p class="text-xs font-bold text-slate-500 mb-6">20 Soalan Latih Tubi</p>
-
-      <div class="bg-sky-50 border border-sky-200 rounded-2xl p-4 text-xs font-semibold text-sky-800 mb-8 max-w-xs">
-        Jawab dengan betul untuk dapatkan markah penuh dan bintang! Pastikan nyawa anda tidak habis.
-      </div>
-
-      <div class="w-full flex gap-3">
-        <button onclick="showScreen('topics')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3.5 rounded-xl text-sm">
-          Kembali
-        </button>
-        <button onclick="startQuiz()" class="flex-2 bg-amber-400 hover:bg-amber-500 text-amber-950 font-fun py-3.5 px-6 rounded-xl text-sm shadow-md bounce-hover flex items-center justify-center gap-1">
-          Mula Menjawab 🎮
-        </button>
-      </div>
-    </div>
-
-
-    <!-- 6. QUIZ PLAY SCREEN -->
-    <div id="screen-quiz" class="flex-1 flex-col hidden bg-slate-50">
-      <div class="p-4 bg-white border-b border-slate-200 flex justify-between items-center">
-        <span id="questionNum" class="text-xs font-bold text-slate-500">Soalan 1 / 20</span>
-        <span id="scoreText" class="text-xs font-bold text-sky-600">Markah: 0</span>
-      </div>
-
-      <div class="w-full bg-slate-200 h-2">
-        <div id="progressBar" class="bg-emerald-500 h-2 w-1/20 transition-all duration-300"></div>
-      </div>
-
-      <div class="p-5 flex-1 flex flex-col justify-between">
-        <div class="bg-white p-5 rounded-2xl border-2 border-slate-200 shadow-sm text-center my-2">
-          <h3 id="questionText" class="text-lg font-bold text-slate-800">
-            Terdapat berapa hari dalam seminggu?
-          </h3>
-        </div>
-
-        <div id="optionsContainer" class="space-y-3 my-2">
-          <!-- Dynamic Buttons Generated Here -->
-        </div>
-
-        <button onclick="showScreen('topics')" class="mt-4 text-xs font-bold text-slate-400 hover:text-slate-600 text-center w-full py-2 flex items-center justify-center gap-1">
-          🏠 KELUAR KE MENU UTAMA
-        </button>
-      </div>
-    </div>
-
-
-    <!-- 7. CHAT AI TUTOR SCREEN -->
-    <div id="screen-chat" class="flex-1 flex-col hidden bg-slate-50 p-4">
-      <div class="flex justify-between items-center mb-3">
+    <!-- 4. SKRIN CHAT CIKGU AI MESRA -->
+    <div id="screen-chat" class="flex-1 flex-col hidden bg-amber-50 p-4">
+      <div class="flex justify-between items-center mb-3 bg-white p-3 rounded-2xl shadow-sm border-2 border-purple-200">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 bg-pink-500 text-white rounded-full flex items-center justify-center font-fun text-lg">🤖</div>
-          <h3 class="font-fun text-purple-700 text-base">Cikgu Genius</h3>
+          <div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center font-fun text-base">🤖</div>
+          <h3 class="font-fun text-purple-700 text-sm">Cikgu AI Genius</h3>
         </div>
-        <button onclick="showScreen('home')" class="bg-slate-200 text-slate-700 text-xs px-3 py-1 rounded-lg font-bold">Kembali</button>
+        <button onclick="showScreen('home')" class="bg-purple-100 text-purple-600 text-xs px-3 py-1.5 rounded-xl font-bold border border-purple-300">
+          🏠 Utama
+        </button>
       </div>
 
-      <div id="chatHistory" class="flex-1 bg-white rounded-2xl p-4 overflow-y-auto mb-3 space-y-3 border border-slate-200">
+      <!-- Dialogue Chat Area -->
+      <div id="chatHistory" class="flex-1 bg-white rounded-3xl p-4 overflow-y-auto mb-3 space-y-3 border-2 border-purple-100 shadow-inner">
         <div class="bg-yellow-100 text-slate-800 p-3 rounded-2xl text-xs font-semibold max-w-[85%] border border-yellow-200">
-          Wah, hye Adik Genius! 🎈 Cikgu kat sini. Tanyakan soalan apa sahaja, Cikgu sedia menjawab! 😊
+          Hai Adik comel! 🎈 Cikgu AI kat sini. Tanyakan soalan apa sahaja, Cikgu sedia bantu! 😊
         </div>
       </div>
 
-      <div class="flex gap-2">
-        <input type="text" id="userInput" placeholder="Tulis soalan di sini..." class="flex-1 bg-slate-100 border-2 border-slate-300 rounded-full px-4 py-2 text-xs font-semibold focus:outline-none">
-        <button onclick="askCikgu()" class="bg-pink-500 hover:bg-pink-600 text-white font-fun px-4 py-2 rounded-full text-xs shadow-md bounce-hover">
+      <!-- Input Bar -->
+      <div class="flex gap-2 bg-white p-2 rounded-full border-2 border-purple-200 shadow-sm">
+        <input type="text" id="userInput" placeholder="Tulis soalan di sini... (Cth: Lembu makan apa?)" class="flex-1 bg-transparent px-4 py-1.5 text-xs font-semibold focus:outline-none">
+        <button onclick="askCikgu()" class="bg-purple-500 hover:bg-purple-600 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow-md bounce-hover">
           Hantar 🚀
         </button>
       </div>
@@ -294,64 +203,76 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // APP STATE
-    let currentTopic = 'Masa & Waktu';
-    let currentQuestionIdx = 0;
-    let score = 0;
-    let hearts = 3;
-
-    // QUESTIONS BANK
-    const questionsBank = [
-      { q: "Terdapat berapa hari dalam seminggu?", options: ["5", "6", "7", "8"], answer: 2 },
-      { q: "Apakah hari selepas hari Isnin?", options: ["Ahad / Sunday", "Selasa / Tuesday", "Rabu / Wednesday", "Khamis / Thursday"], answer: 1 },
-      { q: "Apakah hari sebelum hari Jumaat?", options: ["Selasa / Tuesday", "Rabu / Wednesday", "Khamis / Thursday", "Sabtu / Saturday"], answer: 2 }
-    ];
-
-    // MESRA KANAK-KANAK TEXT-TO-SPEECH (PITCH TINGGI & RAMAH)
+    // SINTESIS SUARA AI MESRA KANAK-KANAK (PITCH TINGGI & RAMAH)
     function speakText(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ms-MY';
-        utterance.pitch = 1.4; // Pitch mesra kanak-kanak
-        utterance.rate = 0.9;  // Sebutan perlahan & jelas
+        utterance.pitch = 1.45; // Pitch tinggi & mesra kanak-kanak
+        utterance.rate = 0.88;  // Sebutan jelas & tidak terlalu pantas
         window.speechSynthesis.speak(utterance);
       }
     }
 
+    // TUKAR SKRIN
     function showScreen(screenId) {
-      document.querySelectorAll('#screen-home, #screen-membaca, #screen-mengira, #screen-topics, #screen-start, #screen-quiz, #screen-chat').forEach(el => {
+      document.querySelectorAll('#screen-home, #screen-membaca, #screen-mengira, #screen-chat').forEach(el => {
         el.classList.add('hidden');
         el.classList.remove('flex');
       });
-
-      const topHeader = document.getElementById('topHeader');
-      if (screenId === 'home') {
-        topHeader.classList.add('hidden');
-      } else {
-        topHeader.classList.remove('hidden');
-      }
-
       const active = document.getElementById(`screen-${screenId}`);
       active.classList.remove('hidden');
       active.classList.add('flex');
     }
 
-    // MODUL MEMBACA (A - Z)
+    // MODUL MEMBACA (A - Z LENGKAP DENGAN PERKATAAN MESRA)
+    const alphabetData = [
+      { letter: 'A', word: 'Ayam', emoji: '🐓' },
+      { letter: 'B', word: 'Bola', emoji: '⚽' },
+      { letter: 'C', word: 'Cawan', emoji: '☕' },
+      { letter: 'D', word: 'Dadu', emoji: '🎲' },
+      { letter: 'E', word: 'Epal', emoji: '🍎' },
+      { letter: 'F', word: 'Feri', emoji: '⛴️' },
+      { letter: 'G', word: 'Gajah', emoji: '🐘' },
+      { letter: 'H', word: 'Hujan', emoji: '🌧️' },
+      { letter: 'I', word: 'Ikan', emoji: '🐟' },
+      { letter: 'J', word: 'Jam', emoji: '⏰' },
+      { letter: 'K', word: 'Kucing', emoji: '🐱' },
+      { letter: 'L', word: 'Lilin', emoji: '🕯️' },
+      { letter: 'M', word: 'Matahari', emoji: '☀️' },
+      { letter: 'N', word: 'Nasi', emoji: '🍚' },
+      { letter: 'O', word: 'Oren', emoji: '🍊' },
+      { letter: 'P', word: 'Pisang', emoji: '🍌' },
+      { letter: 'Q', word: 'Quran', emoji: '📖' },
+      { letter: 'R', word: 'Roti', emoji: '🍞' },
+      { letter: 'S', word: 'Semut', emoji: '🐜' },
+      { letter: 'T', word: 'Topi', emoji: '🧢' },
+      { letter: 'U', word: 'Ular', emoji: '🐍' },
+      { letter: 'V', word: 'Van', emoji: '🚐' },
+      { letter: 'W', word: 'Wau', emoji: '🪁' },
+      { letter: 'X', word: 'Xilofon', emoji: '🎼' },
+      { letter: 'Y', word: 'Yo-yo', emoji: '🪀' },
+      { letter: 'Z', word: 'Zirafah', emoji: '🦒' }
+    ];
+
     function openMembaca() {
       const container = document.getElementById('alphabetGrid');
       if (container.children.length === 0) {
-        for (let i = 65; i <= 90; i++) {
-          const char = String.fromCharCode(i);
+        alphabetData.forEach(item => {
           const btn = document.createElement('button');
-          btn.className = "bg-white border-2 border-pink-200 hover:border-pink-400 text-pink-600 font-fun text-xl p-3 rounded-2xl shadow-sm bounce-hover flex flex-col items-center justify-center";
-          btn.innerHTML = `<span>${char} ${char.toLowerCase()}</span>`;
-          btn.onclick = () => speakText(`Huruf ${char}!`);
+          btn.className = "bg-white border-2 border-pink-200 hover:border-pink-400 p-3 rounded-2xl shadow-sm bounce-hover flex flex-col items-center justify-center text-center";
+          btn.innerHTML = `
+            <span class="text-3xl font-fun text-pink-600">${item.letter} ${item.letter.toLowerCase()}</span>
+            <span class="text-3xl my-1">${item.emoji}</span>
+            <span class="text-[11px] font-bold text-slate-600">${item.word}</span>
+          `;
+          btn.onclick = () => speakText(`Huruf ${item.letter}... ${item.word}!`);
           container.appendChild(btn);
-        }
+        });
       }
       showScreen('membaca');
-      speakText('Jom belajar kenal huruf A sampai Z!');
+      speakText('Jom belajar kenal huruf A sampai Z bersama-sama!');
     }
 
     // MODUL MENGIRA (1 - 100)
@@ -360,7 +281,7 @@
       if (container.children.length === 0) {
         for (let i = 1; i <= 100; i++) {
           const btn = document.createElement('button');
-          btn.className = "bg-white border-2 border-emerald-200 hover:border-emerald-400 text-emerald-600 font-fun text-sm p-2 rounded-xl shadow-sm bounce-hover text-center";
+          btn.className = "bg-white border-2 border-emerald-200 hover:border-emerald-400 text-emerald-600 font-fun text-sm p-2.5 rounded-xl shadow-sm bounce-hover text-center";
           btn.innerText = i;
           btn.onclick = () => speakText(`Nombor ${i}`);
           container.appendChild(btn);
@@ -370,110 +291,33 @@
       speakText('Jom mengira nombor 1 sampai 100!');
     }
 
-    function showTopics() {
-      showScreen('topics');
-      speakText('Pilih topik kuiz matematik kegemaran Adik!');
-    }
-
-    function openTopic(topicName) {
-      currentTopic = topicName;
-      document.getElementById('previewTitle').innerText = topicName;
-      showScreen('start');
-    }
-
-    function startQuiz() {
-      currentQuestionIdx = 0;
-      score = 0;
-      hearts = 3;
-      updateStatus();
-      loadQuestion();
-      showScreen('quiz');
-    }
-
-    function updateStatus() {
-      document.getElementById('scoreText').innerText = `Markah: ${score}`;
-      let heartStr = '';
-      for(let i=0; i<hearts; i++) heartStr += '❤️ ';
-      document.getElementById('heartsContainer').innerText = heartStr;
-    }
-
-    function loadQuestion() {
-      const q = questionsBank[currentQuestionIdx];
-      document.getElementById('questionNum').innerText = `Soalan ${currentQuestionIdx + 1} / 20`;
-      document.getElementById('questionText').innerText = q.q;
-      document.getElementById('progressBar').style.width = `${((currentQuestionIdx + 1) / 20) * 100}%`;
-
-      speakText(q.q);
-
-      const container = document.getElementById('optionsContainer');
-      container.innerHTML = '';
-
-      q.options.forEach((opt, idx) => {
-        const btn = document.createElement('button');
-        btn.className = "w-full bg-white border-2 border-slate-200 hover:border-sky-400 p-4 rounded-2xl text-left font-bold text-slate-700 flex justify-between items-center shadow-sm text-sm bounce-hover";
-        btn.innerHTML = `<span>${opt}</span><span class="icon-box"></span>`;
-        btn.onclick = () => checkAnswer(idx, btn);
-        container.appendChild(btn);
-      });
-    }
-
-    function checkAnswer(selectedIdx, btnEl) {
-      const q = questionsBank[currentQuestionIdx];
-      
-      if(selectedIdx === q.answer) {
-        btnEl.classList.remove('border-slate-200');
-        btnEl.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-800');
-        btnEl.querySelector('.icon-box').innerHTML = '<span class="text-emerald-600 bg-emerald-200 p-1 rounded-md text-xs">✅</span>';
-        score += 5;
-        speakText("Pandai! Jawapan Adik betul!");
-
-        db.ref('scores').push({
-          user: 'HANA',
-          topic: currentTopic,
-          score: score,
-          timestamp: Date.now()
-        });
-      } else {
-        btnEl.classList.remove('border-slate-200');
-        btnEl.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-800');
-        btnEl.querySelector('.icon-box').innerHTML = '<span class="text-rose-600 bg-rose-200 p-1 rounded-md text-xs">❌</span>';
-        hearts--;
-        speakText("Alamak, kurang tepat! Cuba lagi ya!");
-      }
-
-      updateStatus();
-
-      setTimeout(() => {
-        currentQuestionIdx++;
-        if(currentQuestionIdx < questionsBank.length && hearts > 0) {
-          loadQuestion();
-        } else {
-          alert(`Tahniah Adik Genius! Kuiz Selesai. Markah anda: ${score}`);
-          showScreen('topics');
-        }
-      }, 1200);
-    }
-
+    // SOAL JAWAB AI RAMAH KANAK-KANAK
     function askCikgu() {
       const inputEl = document.getElementById('userInput');
       const question = inputEl.value.trim();
       if (!question) return;
 
       const chatHistory = document.getElementById('chatHistory');
+
+      // Mesej Soalan
       const userBubble = document.createElement('div');
       userBubble.className = "bg-purple-500 text-white p-2.5 rounded-2xl text-xs font-semibold max-w-[85%] ml-auto shadow-sm";
       userBubble.innerText = question;
       chatHistory.appendChild(userBubble);
 
+      // Simpan Log ke Firebase
       db.ref('questions').push({ question: question, timestamp: Date.now() });
       inputEl.value = '';
 
+      // Jawapan AI Mesra
       setTimeout(() => {
-        let reply = "Wah, soalan yang bagus! Jom kita terus belajar dengan gembira!";
+        let reply = "Wah, hebatnya soalan Adik! 🌟 Jom belajar lagi bersama Cikgu AI!";
         const qLower = question.toLowerCase();
 
-        if (qLower.includes('nama')) reply = "Nama Cikgu ialah Cikgu Genius! Rakan belajar Adik!";
-        else if (qLower.includes('kira') || qLower.includes('nombor')) reply = "Mengira itu mudah! 1, 2, 3... Adik memang pintar!";
+        if (qLower.includes('lembu')) reply = "Lembu bunyinya Mooo~! 🐮 Lembu suka makan rumput hijau. Adik suka minum susu lembu tak? 🥛";
+        else if (qLower.includes('kucing')) reply = "Kucing bunyinya Meow~ Meow~! 🐱 Kucing ada bulu yang sangat lembut!";
+        else if (qLower.includes('nama')) reply = "Nama Cikgu ialah Cikgu AI Genius! Rakan belajar Adik yang paling ramah!";
+        else if (qLower.includes('1') || qLower.includes('kira')) reply = "Satu, dua, tiga! 🎈 Mengira itu mudah dan sangat menyeronokkan!";
 
         const aiBubble = document.createElement('div');
         aiBubble.className = "bg-yellow-100 text-slate-800 p-2.5 rounded-2xl text-xs font-semibold max-w-[85%] border border-yellow-200 shadow-sm";
