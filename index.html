@@ -36,7 +36,13 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
-<body class="min-h-screen flex justify-center items-center p-2 sm:p-6">
+<body class="min-h-screen flex justify-center items-center p-2 sm:p-6" onclick="startBgMusic()">
+
+  <!-- AUDIO MUZIK LATAR MENENANGKAN -->
+  <audio id="bgMusic" loop preload="auto">
+    <!-- Muzik Latar Lemut & Santai Kanak-Kanak -->
+    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lullaby-study-sweet-dreams-113883.mp3" type="audio/mpeg">
+  </audio>
 
   <!-- FRAME UTAMA MOBILE -->
   <div class="w-full max-w-md bg-amber-50 min-h-[844px] rounded-[40px] shadow-2xl flex flex-col justify-between overflow-hidden relative border-8 border-white">
@@ -46,6 +52,11 @@
       
       <!-- HEADER KARIKATUR -->
       <div class="bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 rounded-3xl p-6 text-center text-white shadow-xl relative overflow-hidden animate-float">
+        <!-- BUTANG KAWALAN MUZIK LATAR -->
+        <button onclick="toggleMusic(event)" id="musicBtn" class="absolute top-3 right-3 bg-white/30 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-full font-bold flex items-center gap-1 border border-white/40 shadow">
+          🎵 Muzik: On
+        </button>
+
         <span class="absolute top-2 left-3 text-2xl">🎈</span>
         <span class="absolute bottom-2 right-3 text-2xl">⭐</span>
 
@@ -55,7 +66,7 @@
 
         <h1 class="font-fun text-3xl tracking-wide drop-shadow-md text-white">ADIK GENIUS</h1>
         <p class="font-bold text-xs bg-white/30 backdrop-blur-md px-4 py-1 rounded-full inline-block mt-1">
-          Belajar Perlahan & Jelas 🌈
+          Belajar Santai & Menenangkan 🌈
         </p>
       </div>
 
@@ -106,7 +117,6 @@
 
     <!-- 2. SKRIN SLAID MEMBACA (HURUF A - Z) -->
     <div id="screen-membaca" class="flex-1 flex-col hidden bg-amber-50 p-4 justify-between">
-      <!-- HEADER -->
       <div class="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border-2 border-pink-200">
         <div class="flex items-center gap-2">
           <span class="text-2xl">🔤</span>
@@ -117,7 +127,6 @@
         </button>
       </div>
 
-      <!-- SLAID CONTENT CONTAINER -->
       <div class="bg-white border-4 border-pink-300 rounded-3xl p-6 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[380px] relative">
         <div class="absolute top-4 right-4 bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-fun" id="letterTracker">
           1 / 26
@@ -128,13 +137,11 @@
         <div class="text-2xl font-fun text-slate-800 mb-1" id="letterWord">Ayam</div>
         <div class="text-sm font-bold text-pink-400 tracking-widest uppercase bg-pink-50 px-4 py-1.5 rounded-full border border-pink-200" id="letterSpell">A - Y - A - M</div>
 
-        <!-- BUTTON SEBUT SUARA -->
         <button onclick="speakCurrentLetter()" class="mt-5 bg-pink-500 hover:bg-pink-600 text-white font-fun px-5 py-2 rounded-full text-xs shadow-md bounce-hover flex items-center gap-2">
           🔊 Dengar Sebutan Perlahan
         </button>
       </div>
 
-      <!-- KAWALAN NAVIGASI SLAID -->
       <div class="flex gap-3">
         <button onclick="prevLetter()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-fun py-3.5 rounded-2xl text-sm shadow">
           ⬅️ Sebelumnya
@@ -146,9 +153,8 @@
     </div>
 
 
-    <!-- 3. SKRIN SLAID MENGIRA (NOMBOR 1 - 100 + EJAAN) -->
+    <!-- 3. SKRIN SLAID MENGIRA (NOMBOR 1 - 100) -->
     <div id="screen-mengira" class="flex-1 flex-col hidden bg-amber-50 p-4 justify-between">
-      <!-- HEADER -->
       <div class="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border-2 border-emerald-200">
         <div class="flex items-center gap-2">
           <span class="text-2xl">🔢</span>
@@ -159,7 +165,6 @@
         </button>
       </div>
 
-      <!-- SLAID CONTENT CONTAINER -->
       <div class="bg-white border-4 border-emerald-300 rounded-3xl p-6 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[380px] relative">
         <div class="absolute top-4 right-4 bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-fun" id="numberTracker">
           1 / 100
@@ -171,13 +176,11 @@
           Ejaan Huruf: S - A - T - U
         </div>
 
-        <!-- BUTTON SEBUT SUARA -->
         <button onclick="speakCurrentNumber()" class="mt-6 bg-emerald-500 hover:bg-emerald-600 text-white font-fun px-5 py-2 rounded-full text-xs shadow-md bounce-hover flex items-center gap-2">
           🔊 Dengar Sebutan Perlahan
         </button>
       </div>
 
-      <!-- KAWALAN NAVIGASI SLAID -->
       <div class="flex gap-3">
         <button onclick="prevNumber()" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-fun py-3.5 rounded-2xl text-sm shadow">
           ⬅️ Sebelumnya
@@ -232,14 +235,39 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // SEBUTAN SUARA PERLAHAN DENGAN SEBUTAN HURUF DEMI HURUF
+    // LOGIK KAWALAN MUZIK LATAR MENENANGKAN
+    let isMusicStarted = false;
+    const bgAudio = document.getElementById('bgMusic');
+    bgAudio.volume = 0.25; // Kelantangan muzik diperlahankan supaya suara mengajar jelas
+
+    function startBgMusic() {
+      if (!isMusicStarted) {
+        bgAudio.play().then(() => {
+          isMusicStarted = true;
+        }).catch(() => {});
+      }
+    }
+
+    function toggleMusic(event) {
+      event.stopPropagation();
+      const btn = document.getElementById('musicBtn');
+      if (bgAudio.paused) {
+        bgAudio.play();
+        btn.innerHTML = '🎵 Muzik: On';
+      } else {
+        bgAudio.pause();
+        btn.innerHTML = '🔇 Muzik: Off';
+      }
+    }
+
+    // SEBUTAN SUARA PERLAHAN
     function speakTextSlow(text) {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ms-MY';
         utterance.pitch = 1.3; 
-        utterance.rate = 0.55;  // Kelajuan perlahan khas untuk sebutan huruf & kata
+        utterance.rate = 0.55; 
         window.speechSynthesis.speak(utterance);
       }
     }
@@ -254,7 +282,7 @@
       active.classList.add('flex');
     }
 
-    // DATA SLAID MEMBACA DENGAN PERKATAAN DIPILIH (Ayam, Bola, Ular, Quran, Zirafah dll)
+    // DATA SLAID A - Z
     const alphabetData = [
       { letter: 'A', word: 'Ayam', emoji: '🐓', spell: 'A - Y - A - M' },
       { letter: 'B', word: 'Bola', emoji: '⚽', spell: 'B - O - L - A' },
@@ -305,7 +333,6 @@
 
     function speakCurrentLetter() {
       const item = alphabetData[currentLetterIdx];
-      // Format sebutan mengikut siri abjad yang diberikan
       const spelledLetters = item.spell.replaceAll('-', ' ');
       speakTextSlow(`${item.letter}. ${item.word}. ${spelledLetters}.`);
     }
