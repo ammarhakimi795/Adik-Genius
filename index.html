@@ -1,89 +1,886 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laman Utama Pembelajaran Fantasi</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adik Genius 🎈</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: url('https://image.pollinations.ai/prompt/fairy%20tale%20village%20with%20mushroom%20houses%20rainbow%20castle%20cute%20animals%20colorful%20storybook%20illustration?width=1280&height=720&nologo=true') no-repeat center center fixed;
+      background-size: cover;
+      user-select: none;
+    }
+    .font-fun { font-family: 'Fredoka One', cursive; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(1deg); }
+    }
+    .animate-float { animation: float 4s ease-in-out infinite; }
+    .bounce-hover:active { transform: scale(0.93); }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-8px); }
+      40%, 80% { transform: translateX(8px); }
+    }
+    .animate-shake { animation: shake 0.4s ease-in-out; }
 
-        body {
-            /* Gantikan 'background.jpg' dengan nama fail/URL gambar anda */
-            background: url('background.jpg') no-repeat center center fixed;
-            background-size: cover;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-        }
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      70% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
-        .header-title {
-            color: #FFF;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7), 0 0 10px #FFD700;
-            font-size: 2.5rem;
-            text-align: center;
-            margin-top: 10px;
-        }
+    .bg-fantasy-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(8px);
+    }
 
-        .menu-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            max-width: 900px;
-            margin-bottom: 30px;
-        }
+    .sortable-ghost { opacity: 0.4; background-color: #fca5a5 !important; }
+    .drag-tile { touch-action: none; cursor: grab; }
+    .drag-tile:active { cursor: grabbing; }
+  </style>
 
-        .btn-menu {
-            background: linear-gradient(135deg, #8B4513, #A0522D);
-            color: #FFF8DC;
-            border: 4px solid #FFD700;
-            padding: 15px 25px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-radius: 25px;
-            cursor: pointer;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
-            transition: all 0.3s ease;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
-            min-width: 180px;
-            text-align: center;
-        }
-
-        .btn-menu:hover {
-            transform: translateY(-5px) scale(1.05);
-            background: linear-gradient(135deg, #A0522D, #CD853F);
-            box-shadow: 0 12px 20px rgba(255, 215, 0, 0.6);
-            color: #FFFFFF;
-        }
-
-        .btn-menu:active {
-            transform: translateY(2px);
-        }
-    </style>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
-<body>
+<body class="min-h-screen flex justify-center items-center p-2 sm:p-6" onclick="initAudioContext()">
 
-    <h1 class="header-title">Dunia Pembelajaran Interaktif</h1>
+  <div class="w-full max-w-md bg-white/70 backdrop-blur-md min-h-[844px] rounded-[40px] shadow-2xl flex flex-col justify-between overflow-hidden relative border-8 border-white/80">
 
-    <div class="menu-container">
-        <button class="btn-menu" onclick="bukaMenu('huruf')">1. Jom Kenal Huruf</button>
-        <button class="btn-menu" onclick="bukaMenu('mengira')">2. Mari Mengira</button>
-        <button class="btn-menu" onclick="bukaMenu('bentuk')">3. Bentuk dan Warna</button>
-        <button class="btn-menu" onclick="bukaMenu('haiwan')">4. Haiwan dan Bunyi</button>
-        <button class="btn-menu" onclick="bukaMenu('eja')">5. Tarik dan Eja</button>
+    <canvas id="starCanvas" class="absolute inset-0 pointer-events-none z-50 hidden"></canvas>
+
+    <!-- 1. SKRIN UTAMA -->
+    <div id="screen-home" class="flex-1 flex flex-col p-4 overflow-y-auto justify-between space-y-3">
+      
+      <div class="bg-gradient-to-br from-yellow-400 via-orange-400 to-pink-500 rounded-3xl p-4 text-center text-white shadow-xl relative overflow-hidden animate-float">
+        <div class="absolute top-3 left-3 bg-white/30 backdrop-blur-md text-white text-[11px] px-2.5 py-1 rounded-full font-bold border border-white/40 shadow flex items-center gap-1">
+          <span>⭐</span> <span id="starCounter">0</span>
+        </div>
+
+        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center border-4 border-yellow-200 shadow-inner mx-auto mt-3 mb-1 overflow-hidden">
+          <span class="text-4xl">🧑‍🎓</span>
+        </div>
+
+        <h1 class="font-fun text-xl tracking-wide drop-shadow-md text-white">ADIK GENIUS</h1>
+        <p class="font-bold text-[10px] bg-white/30 backdrop-blur-md px-3 py-0.5 rounded-full inline-block">
+          Pusat Pembelajaran Interaktif 🌈
+        </p>
+      </div>
+
+      <div class="space-y-2 flex-1">
+        <button onclick="openMembaca()" class="w-full bg-gradient-to-r from-pink-400 to-rose-500 text-white rounded-2xl p-2.5 shadow border-b-4 border-rose-700 bounce-hover flex items-center gap-3">
+          <span class="text-2xl">🔤</span>
+          <div class="text-left">
+            <span class="font-fun text-xs block leading-tight">1. KENAL HURUF (A - Z)</span>
+            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Slaid & Sebutan 🅰️</span>
+          </div>
+        </button>
+
+        <button onclick="openMengira()" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 text-white rounded-2xl p-2.5 shadow border-b-4 border-teal-700 bounce-hover flex items-center gap-3">
+          <span class="text-2xl">🔢</span>
+          <div class="text-left">
+            <span class="font-fun text-xs block leading-tight">2. MARI MENGIRA (1 - 100)</span>
+            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Nombor & Ejaan 🎯</span>
+          </div>
+        </button>
+
+        <button onclick="openWarna()" class="w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-2xl p-2.5 shadow border-b-4 border-orange-700 bounce-hover flex items-center gap-3">
+          <span class="text-2xl">🎨</span>
+          <div class="text-left">
+            <span class="font-fun text-xs block leading-tight">3. BENTUK & WARNA</span>
+            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Bentuk SVG & Warna 📐</span>
+          </div>
+        </button>
+
+        <button onclick="openHaiwan()" class="w-full bg-gradient-to-r from-blue-400 to-cyan-500 text-white rounded-2xl p-2.5 shadow border-b-4 border-cyan-700 bounce-hover flex items-center gap-3">
+          <span class="text-2xl">🦁</span>
+          <div class="text-left">
+            <span class="font-fun text-xs block leading-tight">4. HAIWAN & BUNYI</span>
+            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Bunyi Instant Web Audio 🔊</span>
+          </div>
+        </button>
+
+        <button onclick="openEja()" class="w-full bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-2xl p-2.5 shadow border-b-4 border-pink-700 bounce-hover flex items-center gap-3">
+          <span class="text-2xl">🧩</span>
+          <div class="text-left">
+            <span class="font-fun text-xs block leading-tight">5. HERET & EJA (DRAG & DROP)</span>
+            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Susun Huruf Interaktif 🤏</span>
+          </div>
+        </button>
+
+        <button onclick="openKuiz()" class="w-full bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-2xl p-2.5 shadow border-b-4 border-purple-800 bounce-hover flex items-center gap-3">
+          <span class="text-2xl">🎯</span>
+          <div class="text-left">
+            <span class="font-fun text-xs block leading-tight">6. KUIZ GAMBAR RAWAK</span>
+            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Soalan Rawak Gambar 🖼️</span>
+          </div>
+        </button>
+
+        <button onclick="openMath()" class="w-full bg-gradient-to-r from-sky-400 to-blue-600 text-white rounded-2xl p-2.5 shadow border-b-4 border-blue-800 bounce-hover flex items-center gap-3">
+          <span class="text-2xl">➕</span>
+          <div class="text-left">
+            <span class="font-fun text-xs block leading-tight">7. ASAS MATEMATIK VISUAL</span>
+            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Tambah & Tolak Visual 🍎</span>
+          </div>
+        </button>
+
+        <button onclick="showScreen('chat')" class="w-full bg-gradient-to-r from-indigo-500 to-slate-700 text-white rounded-2xl p-2.5 shadow border-b-4 border-slate-900 bounce-hover flex items-center gap-3">
+          <span class="text-2xl">🤖</span>
+          <div class="text-left">
+            <span class="font-fun text-xs block leading-tight">8. TANYA CIKGU AI</span>
+            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Tanya Soalan 💬</span>
+          </div>
+        </button>
+      </div>
+
+      <div class="text-center text-[10px] font-bold text-slate-700 bg-white/70 py-1 rounded-full backdrop-blur-sm">
+        ADIK GENIUS · MALAYSIA 🇲🇾
+      </div>
     </div>
 
-    <script>
-        function bukaMenu(kategori) {
-            alert('Mengakses modul: ' + kategori);
-            // Tambah pautan modul di sini, contoh: window.location.href = kategori + '.html';
+    <!-- 2. MEMBACA -->
+    <div id="screen-membaca" class="flex-1 flex-col hidden p-4 justify-between">
+      <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-pink-200">
+        <h2 class="font-fun text-base text-pink-600">🔤 Kenal Huruf</h2>
+        <button onclick="showScreen('home')" class="bg-pink-100 text-pink-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+      </div>
+
+      <div class="bg-fantasy-card border-4 border-pink-300 rounded-3xl p-6 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[350px] relative">
+        <div class="absolute top-4 right-4 bg-pink-100 text-pink-600 px-3 py-1 rounded-full text-xs font-fun" id="letterTracker">1 / 26</div>
+        <div class="text-6xl font-fun text-pink-500 mb-2" id="letterDisplay">A a</div>
+        <div class="text-6xl my-2 animate-bounce" id="letterEmoji">🐓</div>
+        <div class="text-xl font-fun text-slate-800 mb-1" id="letterWord">Ayam</div>
+        <div class="text-xs font-bold text-pink-500 tracking-widest uppercase bg-white/80 px-4 py-1 rounded-full border border-pink-200" id="letterSpell">A - Y - A - M</div>
+
+        <button onclick="speakCurrentLetter()" class="mt-4 bg-pink-500 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow bounce-hover">
+          🔊 Dengar Sebutan
+        </button>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="prevLetter()" class="flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
+        <button onclick="nextLetter()" class="flex-1 bg-pink-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
+      </div>
+    </div>
+
+    <!-- 3. MENGIRA -->
+    <div id="screen-mengira" class="flex-1 flex-col hidden p-4 justify-between">
+      <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-emerald-200">
+        <h2 class="font-fun text-base text-emerald-600">🔢 Mari Mengira</h2>
+        <button onclick="showScreen('home')" class="bg-emerald-100 text-emerald-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+      </div>
+
+      <div class="bg-fantasy-card border-4 border-emerald-300 rounded-3xl p-6 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[350px] relative">
+        <div class="absolute top-4 right-4 bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-fun" id="numberTracker">1 / 100</div>
+        <div class="text-7xl font-fun text-emerald-500 mb-2" id="numberDisplay">1</div>
+        <div class="text-xl font-fun text-slate-800 mb-2" id="numberSpellText">Satu</div>
+        <div class="text-xs font-bold text-emerald-700 bg-white/80 px-4 py-1.5 rounded-2xl border border-emerald-200" id="numberLetterSpell">Ejaan: S - A - T - U</div>
+
+        <button onclick="speakCurrentNumber()" class="mt-4 bg-emerald-500 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow bounce-hover">
+          🔊 Dengar Sebutan
+        </button>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="prevNumber()" class="flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
+        <button onclick="nextNumber()" class="flex-1 bg-emerald-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
+      </div>
+    </div>
+
+    <!-- 4. BENTUK & WARNA -->
+    <div id="screen-warna" class="flex-1 flex-col hidden p-4 justify-between">
+      <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-amber-200">
+        <h2 class="font-fun text-base text-orange-600">🎨 Bentuk & Warna</h2>
+        <button onclick="showScreen('home')" class="bg-orange-100 text-orange-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+      </div>
+
+      <div class="bg-fantasy-card border-4 border-orange-300 rounded-3xl p-5 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[360px] relative">
+        <div class="absolute top-4 right-4 bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-fun" id="shapeTracker">1 / 10</div>
+        
+        <div class="w-36 h-36 my-2 flex items-center justify-center relative" id="shapeSvgContainer"></div>
+
+        <div class="text-2xl font-fun text-slate-800" id="shapeName">Bulatan Merah</div>
+        <div class="text-xs font-bold text-orange-600 bg-white/70 px-3 py-1 rounded-full mt-1" id="shapeDesc">Bentuk: Bulatan | Warna: Merah</div>
+
+        <button onclick="speakCurrentShape()" class="mt-4 bg-orange-500 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow bounce-hover">
+          🔊 Dengar Sebutan
+        </button>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="prevShape()" class="flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
+        <button onclick="nextShape()" class="flex-1 bg-orange-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
+      </div>
+    </div>
+
+    <!-- 5. HAIWAN & BUNYI (WEB AUDIO API FIX) -->
+    <div id="screen-haiwan" class="flex-1 flex-col hidden p-4 justify-between">
+      <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-cyan-200">
+        <h2 class="font-fun text-base text-cyan-600">🦁 Haiwan & Bunyi</h2>
+        <button onclick="showScreen('home')" class="bg-cyan-100 text-cyan-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+      </div>
+
+      <div class="bg-fantasy-card border-4 border-cyan-300 rounded-3xl p-5 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[360px] relative">
+        <div class="absolute top-4 right-4 bg-cyan-100 text-cyan-600 px-3 py-1 rounded-full text-xs font-fun" id="animalTracker">1 / 8</div>
+
+        <div class="text-7xl my-3 animate-bounce" id="animalEmoji">🦁</div>
+        <div class="text-2xl font-fun text-slate-800" id="animalName">Singa</div>
+        <div class="text-xs font-bold text-cyan-700 bg-white/70 px-3 py-1 rounded-full mt-1" id="animalCategory">Kategori: Haiwan Hutan</div>
+
+        <button onclick="playAnimalAudioDirect()" class="mt-5 bg-cyan-500 hover:bg-cyan-600 text-white font-fun px-6 py-2.5 rounded-full text-xs shadow-md bounce-hover flex items-center gap-2 border-b-4 border-cyan-700">
+          🔊 Dengar Bunyi Haiwan
+        </button>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="prevAnimal()" class="flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
+        <button onclick="nextAnimal()" class="flex-1 bg-cyan-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
+      </div>
+    </div>
+
+    <!-- 6. HERET & EJA -->
+    <div id="screen-eja" class="flex-1 flex-col hidden p-4 justify-between">
+      <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-red-200">
+        <h2 class="font-fun text-base text-red-600">🧩 Heret & Eja</h2>
+        <button onclick="showScreen('home')" class="bg-red-100 text-red-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+      </div>
+
+      <div id="ejaCard" class="bg-fantasy-card border-4 border-red-300 rounded-3xl p-4 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[380px] relative">
+        <div class="absolute top-3 right-3 bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-fun" id="ejaTracker">1 / 8</div>
+
+        <div class="text-6xl my-1 animate-pulse" id="ejaEmoji">⚽</div>
+        <div class="text-xs font-fun text-slate-700 bg-white/80 px-3 py-1 rounded-full mb-3 border border-red-200">
+          🤏 Heret / susun huruf mengikut urutan!
+        </div>
+
+        <div class="flex gap-2 justify-center mb-6 min-h-[50px] p-2 bg-red-50/60 rounded-2xl border-2 border-red-200 w-full" id="dragContainer"></div>
+
+        <button onclick="checkDragAnswer()" class="bg-emerald-500 text-white font-fun px-6 py-2 rounded-full text-xs shadow-md bounce-hover border-b-4 border-emerald-700">
+          ✅ Semak Ejaan
+        </button>
+
+        <div id="ejaFeedback" class="h-6 text-xs font-bold text-emerald-600 mt-2 flex items-center gap-1 justify-center"></div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="prevEja()" class="flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
+        <button onclick="nextEja()" class="flex-1 bg-red-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
+      </div>
+    </div>
+
+    <!-- 7. KUIZ GAMBAR -->
+    <div id="screen-kuiz" class="flex-1 flex-col hidden p-4 justify-between">
+      <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-purple-200">
+        <h2 class="font-fun text-base text-purple-700">🎯 Kuiz Gambar Rawak</h2>
+        <button onclick="showScreen('home')" class="bg-purple-100 text-purple-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+      </div>
+
+      <div id="kuizCard" class="bg-fantasy-card border-4 border-purple-300 rounded-3xl p-5 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[380px] relative">
+        <div class="text-xs font-fun text-purple-600 bg-purple-100 px-3 py-1 rounded-full mb-2">Soalan Ujian 🧠</div>
+        <h3 class="text-lg font-fun text-slate-800 mb-4" id="kuizQuestion">Mana satu Gajah?</h3>
+
+        <div class="grid grid-cols-2 gap-3 w-full" id="kuizOptions"></div>
+
+        <div id="kuizFeedback" class="h-6 text-xs font-bold text-purple-600 mt-4"></div>
+      </div>
+
+      <button onclick="generateKuizQuestion()" class="w-full bg-purple-600 text-white font-fun py-3 rounded-2xl text-xs shadow-md bounce-hover border-b-4 border-purple-800">
+        Soalan Seterusnya 🎲
+      </button>
+    </div>
+
+    <!-- 8. MATEMATIK -->
+    <div id="screen-math" class="flex-1 flex-col hidden p-4 justify-between">
+      <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-sky-200">
+        <h2 class="font-fun text-base text-sky-600">➕ Asas Matematik</h2>
+        <button onclick="showScreen('home')" class="bg-sky-100 text-sky-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+      </div>
+
+      <div id="mathCard" class="bg-fantasy-card border-4 border-sky-300 rounded-3xl p-4 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[380px] relative">
+        <div class="text-xs font-fun text-sky-600 bg-sky-100 px-3 py-1 rounded-full mb-3">Kira & Jawab 🍎</div>
+
+        <div class="flex items-center justify-center gap-2 mb-4 bg-white/80 p-3 rounded-2xl border border-sky-200 shadow-inner w-full">
+          <div class="flex flex-wrap justify-center gap-1 text-2xl max-w-[90px]" id="mathVisualA">🍎🍎</div>
+          <span class="text-2xl font-fun text-sky-600" id="mathOp">+</span>
+          <div class="flex flex-wrap justify-center gap-1 text-2xl max-w-[90px]" id="mathVisualB">🍎</div>
+          <span class="text-2xl font-fun text-slate-700">= ?</span>
+        </div>
+
+        <div class="text-sm font-bold text-slate-700 mb-4" id="mathTextQuestion">2 + 1 = Berapa?</div>
+
+        <div class="grid grid-cols-3 gap-3 w-full" id="mathOptions"></div>
+
+        <div id="mathFeedback" class="h-6 text-xs font-bold text-sky-600 mt-4"></div>
+      </div>
+
+      <button onclick="generateMathQuestion()" class="w-full bg-sky-500 text-white font-fun py-3 rounded-2xl text-xs shadow-md bounce-hover border-b-4 border-sky-700">
+        Soalan Matematik Baru 🎯
+      </button>
+    </div>
+
+    <!-- 9. CHAT CIKGU AI -->
+    <div id="screen-chat" class="flex-1 flex-col hidden p-4">
+      <div class="flex justify-between items-center mb-3 bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-purple-200">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center font-fun text-base">🤖</div>
+          <h3 class="font-fun text-purple-700 text-sm">Cikgu AI Genius</h3>
+        </div>
+        <button onclick="showScreen('home')" class="bg-purple-100 text-purple-600 text-xs px-3 py-1.5 rounded-xl font-bold border border-purple-300">
+          🏠 Utama
+        </button>
+      </div>
+
+      <div id="chatHistory" class="flex-1 bg-fantasy-card rounded-3xl p-4 overflow-y-auto mb-3 space-y-3 border-2 border-purple-200 shadow-inner">
+        <div class="bg-yellow-100/90 text-slate-800 p-3 rounded-2xl text-xs font-semibold max-w-[85%] border border-yellow-300 shadow">
+          Hai Adik comel! 🎈 Tanyakan soalan apa sahaja, Cikgu AI sedia bantu! 😊
+        </div>
+      </div>
+
+      <div class="flex gap-2 bg-white/90 p-2 rounded-full border-2 border-purple-200 shadow-sm backdrop-blur-md">
+        <input type="text" id="userInput" placeholder="Tulis soalan di sini..." class="flex-1 bg-transparent px-4 py-1.5 text-xs font-semibold focus:outline-none" onkeypress="if(event.key === 'Enter') askCikgu()">
+        <button onclick="askCikgu()" class="bg-purple-500 hover:bg-purple-600 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow-md bounce-hover">
+          Hantar 🚀
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // AUDIO CONTEXT INITIALIZATION FOR ALL BROWSERS
+    let audioCtx = null;
+    function initAudioContext() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // FIREBASE INITIALIZATION
+    const firebaseConfig = {
+      apiKey: "AIzaSyCTUwvlX-GFn30T-fZZCfeCvRn8oVibXRw",
+      authDomain: "adik-genius.firebaseapp.com",
+      databaseURL: "https://adik-genius-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "adik-genius",
+      storageBucket: "adik-genius.firebasestorage.app",
+      messagingSenderId: "1076103627468",
+      appId: "1:1076103627468:web:6307236196a3c3a8ef7869"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let totalStars = 0;
+    function addStar() {
+      totalStars++;
+      document.getElementById('starCounter').innerText = totalStars;
+    }
+
+    function triggerStarShower() {
+      const canvas = document.getElementById('starCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+      canvas.classList.remove('hidden');
+
+      const stars = [];
+      for (let i = 0; i < 35; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * -canvas.height,
+          speedY: 4 + Math.random() * 6,
+          speedX: (Math.random() - 0.5) * 2,
+          size: 20 + Math.random() * 20
+        });
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let activeStars = 0;
+        stars.forEach(s => {
+          s.y += s.speedY; s.x += s.speedX;
+          if (s.y < canvas.height) {
+            activeStars++;
+            ctx.font = `${s.size}px sans-serif`;
+            ctx.fillText('⭐', s.x, s.y);
+          }
+        });
+        if (activeStars > 0) requestAnimationFrame(animate);
+        else canvas.classList.add('hidden');
+      }
+      animate();
+    }
+
+    function playSoundEffect(type) {
+      initAudioContext();
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+
+        if (type === 'correct') {
+          osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+          osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+          osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+          osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.4);
+        } else if (type === 'wrong') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+          osc.frequency.setValueAtTime(110, audioCtx.currentTime + 0.15);
+          gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+          osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime + 0.3);
         }
-    </script>
+      } catch(e) {}
+    }
+
+    function speakTextSlow(text, onEndCallback) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ms-MY'; utterance.pitch = 1.2; utterance.rate = 0.75;
+        if (onEndCallback) utterance.onend = onEndCallback;
+        window.speechSynthesis.speak(utterance);
+      } else if (onEndCallback) { onEndCallback(); }
+    }
+
+    function showScreen(screenId) {
+      document.querySelectorAll('#screen-home, #screen-membaca, #screen-mengira, #screen-warna, #screen-haiwan, #screen-eja, #screen-kuiz, #screen-math, #screen-chat').forEach(el => {
+        el.classList.add('hidden'); el.classList.remove('flex');
+      });
+      const active = document.getElementById(`screen-${screenId}`);
+      active.classList.remove('hidden'); active.classList.add('flex');
+    }
+
+    /* ---------------- 1. MEMBACA ---------------- */
+    const alphabetData = [
+      { letter: 'A', word: 'Ayam', emoji: '🐓', spell: 'A - Y - A - M' },
+      { letter: 'B', word: 'Bola', emoji: '⚽', spell: 'B - O - L - A' },
+      { letter: 'C', word: 'Cawan', emoji: '☕', spell: 'C - A - W - A - N' },
+      { letter: 'D', word: 'Dadu', emoji: '🎲', spell: 'D - A - D - U' },
+      { letter: 'E', word: 'Epal', emoji: '🍎', spell: 'E - P - A - L' },
+      { letter: 'F', word: 'Feri', emoji: '⛴️', spell: 'F - E - R - I' },
+      { letter: 'G', word: 'Gajah', emoji: '🐘', spell: 'G - A - J - A - H' },
+      { letter: 'H', word: 'Hujan', emoji: '🌧️', spell: 'H - U - J - A - N' },
+      { letter: 'I', word: 'Ikan', emoji: '🐟', spell: 'I - K - A - N' },
+      { letter: 'J', word: 'Jam', emoji: '⏰', spell: 'J - A - M' },
+      { letter: 'K', word: 'Kucing', emoji: '🐱', spell: 'K - U - C - I - N - G' },
+      { letter: 'L', word: 'Lilin', emoji: '🕯️', spell: 'L - I - L - I - N' },
+      { letter: 'M', word: 'Matahari', emoji: '☀️', spell: 'M - A - T - A - H - A - R - I' },
+      { letter: 'N', word: 'Nasi', emoji: '🍚', spell: 'N - A - S - I' },
+      { letter: 'O', word: 'Oren', emoji: '🍊', spell: 'O - R - E - N' },
+      { letter: 'P', word: 'Pisang', emoji: '🍌', spell: 'P - I - S - A - N - G' },
+      { letter: 'Q', word: 'Quran', emoji: '📖', spell: 'Q - U - R - A - N' },
+      { letter: 'R', word: 'Roti', emoji: '🍞', spell: 'R - O - T - I' },
+      { letter: 'S', word: 'Semut', emoji: '🐜', spell: 'S - E - M - U - T' },
+      { letter: 'T', word: 'Topi', emoji: '🧢', spell: 'T - O - P - I' },
+      { letter: 'U', word: 'Ular', emoji: '🐍', spell: 'U - L - A - R' },
+      { letter: 'V', word: 'Van', emoji: '🚐', spell: 'V - A - N' },
+      { letter: 'W', word: 'Wau', emoji: '🪁', spell: 'W - A - U' },
+      { letter: 'X', word: 'Xilofon', emoji: '🎼', spell: 'X - I - L - O - F - O - N' },
+      { letter: 'Y', word: 'Yo-yo', emoji: '🪀', spell: 'Y - O - Y - O' },
+      { letter: 'Z', word: 'Zirafah', emoji: '🦒', spell: 'Z - I - R - A - F - A - H' }
+    ];
+    let currentLetterIdx = 0;
+    function openMembaca() { currentLetterIdx = 0; updateLetterSlide(); showScreen('membaca'); }
+    function updateLetterSlide() {
+      const item = alphabetData[currentLetterIdx];
+      document.getElementById('letterTracker').innerText = `${currentLetterIdx + 1} / 26`;
+      document.getElementById('letterDisplay').innerText = `${item.letter} ${item.letter.toLowerCase()}`;
+      document.getElementById('letterEmoji').innerText = item.emoji;
+      document.getElementById('letterWord').innerText = item.word;
+      document.getElementById('letterSpell').innerText = item.spell;
+      speakCurrentLetter();
+    }
+    function speakCurrentLetter() {
+      const item = alphabetData[currentLetterIdx];
+      speakTextSlow(`${item.letter}. ${item.word}. ${item.spell.replaceAll('-', ' ')}.`);
+    }
+    function nextLetter() { if (currentLetterIdx < alphabetData.length - 1) { currentLetterIdx++; updateLetterSlide(); } }
+    function prevLetter() { if (currentLetterIdx > 0) { currentLetterIdx--; updateLetterSlide(); } }
+
+    /* ---------------- 2. MENGIRA ---------------- */
+    function numberToWords(num) {
+      const sa = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "lapan", "sembilan", "sepuluh", "sebelas"];
+      if (num <= 11) return sa[num];
+      if (num < 20) return sa[num - 10] + " belas";
+      if (num < 100) {
+        let tens = Math.floor(num / 10);
+        let remainder = num % 10;
+        return sa[tens] + " puluh " + sa[remainder];
+      }
+      if (num === 100) return "seratus";
+      return num.toString();
+    }
+    let currentNumberVal = 1;
+    function openMengira() { currentNumberVal = 1; updateNumberSlide(); showScreen('mengira'); }
+    function updateNumberSlide() {
+      const wordText = numberToWords(currentNumberVal).trim();
+      const spelledLetters = wordText.replace(/\s+/g, '').toUpperCase().split('').join(' - ');
+      document.getElementById('numberTracker').innerText = `${currentNumberVal} / 100`;
+      document.getElementById('numberDisplay').innerText = currentNumberVal;
+      document.getElementById('numberSpellText').innerText = wordText.toUpperCase();
+      document.getElementById('numberLetterSpell').innerText = `Ejaan: ${spelledLetters}`;
+      speakCurrentNumber();
+    }
+    function speakCurrentNumber() {
+      const wordText = numberToWords(currentNumberVal).trim();
+      speakTextSlow(`${currentNumberVal}. ${wordText}.`);
+    }
+    function nextNumber() { if (currentNumberVal < 100) { currentNumberVal++; updateNumberSlide(); } }
+    function prevNumber() { if (currentNumberVal > 1) { currentNumberVal--; updateNumberSlide(); } }
+
+    /* ---------------- 3. BENTUK & WARNA ---------------- */
+    const shapeData = [
+      { name: 'Bulatan Merah', desc: 'Bentuk: Bulatan | Warna: Merah', color: '#ef4444', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="currentColor"/></svg>' },
+      { name: 'Segi Empat Biru', desc: 'Bentuk: Segi Empat Sama | Warna: Biru', color: '#3b82f6', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><rect x="10" y="10" width="80" height="80" rx="8" fill="currentColor"/></svg>' },
+      { name: 'Segi Tiga Hijau', desc: 'Bentuk: Segi Tiga | Warna: Hijau', color: '#10b981', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,10 90,90 10,90" fill="currentColor"/></svg>' },
+      { name: 'Bintang Kuning', desc: 'Bentuk: Bintang | Warna: Kuning', color: '#eab308', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" fill="currentColor"/></svg>' },
+      { name: 'Hati Merah Jambu', desc: 'Bentuk: Hati | Warna: Merah Jambu', color: '#ec4899', svg: '<svg class="w-28 h-28" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>' },
+      { name: 'Bujur Ungu', desc: 'Bentuk: Bujur (Oval) | Warna: Ungu', color: '#a855f7', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="30" fill="currentColor"/></svg>' },
+      { name: 'Segi Empat Tepat Jingga', desc: 'Bentuk: Segi Empat Tepat | Warna: Jingga', color: '#f97316', svg: '<svg class="w-32 h-24" viewBox="0 0 120 80"><rect x="5" y="5" width="110" height="70" rx="8" fill="currentColor"/></svg>' },
+      { name: 'Berlian Coklat', desc: 'Bentuk: Berlian | Warna: Coklat', color: '#78350f', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,5 95,50 50,95 5,50" fill="currentColor"/></svg>' },
+      { name: 'Pentagon Sian', desc: 'Bentuk: Segi Lima | Warna: Sian', color: '#06b6d4', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,5 95,38 78,90 22,90 5,38" fill="currentColor"/></svg>' },
+      { name: 'Heksagon Indigo', desc: 'Bentuk: Segi Enam | Warna: Indigo', color: '#6366f1', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="currentColor"/></svg>' }
+    ];
+
+    let currentShapeIdx = 0;
+    function openWarna() { currentShapeIdx = 0; updateShapeSlide(); showScreen('warna'); }
+    function updateShapeSlide() {
+      const item = shapeData[currentShapeIdx];
+      document.getElementById('shapeTracker').innerText = `${currentShapeIdx + 1} / ${shapeData.length}`;
+      const container = document.getElementById('shapeSvgContainer');
+      container.innerHTML = item.svg;
+      container.firstElementChild.style.color = item.color;
+      document.getElementById('shapeName').innerText = item.name;
+      document.getElementById('shapeDesc').innerText = item.desc;
+      speakCurrentShape();
+    }
+    function speakCurrentShape() {
+      const item = shapeData[currentShapeIdx];
+      speakTextSlow(`${item.name}. ${item.desc}.`);
+    }
+    function nextShape() { if (currentShapeIdx < shapeData.length - 1) { currentShapeIdx++; updateShapeSlide(); } }
+    function prevShape() { if (currentShapeIdx > 0) { currentShapeIdx--; updateShapeSlide(); } }
+
+    /* ---------------- 4. HAIWAN & BUNYI (WEB AUDIO SYNTHESIZER FIX) ---------------- */
+    const animalData = [
+      { name: 'Kucing', cat: 'Haiwan Peliharaan', emoji: '🐱', soundType: 'meow' },
+      { name: 'Anjing', cat: 'Haiwan Peliharaan', emoji: '🐶', soundType: 'bark' },
+      { name: 'Ayam', cat: 'Haiwan Ternakan', emoji: '🐓', soundType: 'rooster' },
+      { name: 'Lembu', cat: 'Haiwan Ternakan', emoji: '🐮', soundType: 'cow' },
+      { name: 'Singa', cat: 'Haiwan Hutan', emoji: '🦁', soundType: 'roar' },
+      { name: 'Monyet', cat: 'Haiwan Hutan', emoji: '🐒', soundType: 'monkey' },
+      { name: 'Kambing', cat: 'Haiwan Ternakan', emoji: '🐐', soundType: 'goat' },
+      { name: 'Gajah', cat: 'Haiwan Hutan', emoji: '🐘', soundType: 'trumpet' }
+    ];
+
+    let currentAnimalIdx = 0;
+    function openHaiwan() { currentAnimalIdx = 0; updateAnimalSlide(); showScreen('haiwan'); }
+    function updateAnimalSlide() {
+      const item = animalData[currentAnimalIdx];
+      document.getElementById('animalTracker').innerText = `${currentAnimalIdx + 1} / ${animalData.length}`;
+      document.getElementById('animalEmoji').innerText = item.emoji;
+      document.getElementById('animalName').innerText = item.name;
+      document.getElementById('animalCategory').innerText = `Kategori: ${item.cat}`;
+      speakTextSlow(`${item.name}`);
+    }
+
+    function playAnimalAudioDirect() {
+      initAudioContext();
+      const item = animalData[currentAnimalIdx];
+      
+      // Menggunakan Synthesizer Web Audio API supaya bunyi 100% keluar di mana-mana peranti
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (item.soundType === 'meow') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(700, now);
+        osc.frequency.exponentialRampToValueAtTime(400, now + 0.5);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+        osc.start(now); osc.stop(now + 0.5);
+      } else if (item.soundType === 'bark') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+        gain.gain.setValueAtTime(0.5, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+        osc.start(now); osc.stop(now + 0.2);
+      } else if (item.soundType === 'cow') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.linearRampToValueAtTime(130, now + 0.8);
+        gain.gain.setValueAtTime(0.6, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+        osc.start(now); osc.stop(now + 0.8);
+      } else if (item.soundType === 'roar') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(120, now);
+        osc.frequency.linearRampToValueAtTime(60, now + 1.0);
+        gain.gain.setValueAtTime(0.7, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
+        osc.start(now); osc.stop(now + 1.0);
+      } else if (item.soundType === 'rooster') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.linearRampToValueAtTime(800, now + 0.3);
+        osc.frequency.linearRampToValueAtTime(600, now + 0.7);
+        gain.gain.setValueAtTime(0.5, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
+        osc.start(now); osc.stop(now + 0.7);
+      } else {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(250, now);
+        osc.frequency.linearRampToValueAtTime(350, now + 0.4);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc.start(now); osc.stop(now + 0.4);
+      }
+    }
+
+    function nextAnimal() { if (currentAnimalIdx < animalData.length - 1) { currentAnimalIdx++; updateAnimalSlide(); } }
+    function prevAnimal() { if (currentAnimalIdx > 0) { currentAnimalIdx--; updateAnimalSlide(); } }
+
+    /* ---------------- 5. HERET & EJA ---------------- */
+    const ejaData = [
+      { word: 'BOLA', emoji: '⚽' },
+      { word: 'AYAM', emoji: '🐓' },
+      { word: 'IKAN', emoji: '🐟' },
+      { word: 'EPAL', emoji: '🍎' },
+      { word: 'TOPI', emoji: '🧢' },
+      { word: 'ROTI', emoji: '🍞' },
+      { word: 'KUCING', emoji: '🐱' },
+      { word: 'GAJAH', emoji: '🐘' }
+    ];
+    let currentEjaIdx = 0;
+    let sortableInstance = null;
+
+    function openEja() { currentEjaIdx = 0; setupDragGame(); showScreen('eja'); }
+
+    function setupDragGame() {
+      const item = ejaData[currentEjaIdx];
+      const container = document.getElementById('dragContainer');
+      document.getElementById('ejaTracker').innerText = `${currentEjaIdx + 1} / ${ejaData.length}`;
+      document.getElementById('ejaEmoji').innerText = item.emoji;
+      document.getElementById('ejaFeedback').innerText = '';
+
+      const letters = item.word.split('');
+      const shuffled = [...letters].sort(() => Math.random() - 0.5);
+
+      container.innerHTML = '';
+      shuffled.forEach((letChar) => {
+        const tile = document.createElement('div');
+        tile.className = "drag-tile w-11 h-12 bg-red-500 text-white rounded-xl font-fun text-xl flex items-center justify-center shadow-md border-b-4 border-red-700 select-none";
+        tile.innerText = letChar;
+        container.appendChild(tile);
+      });
+
+      if (sortableInstance) sortableInstance.destroy();
+
+      sortableInstance = new Sortable(container, {
+        animation: 200,
+        ghostClass: 'sortable-ghost',
+        onEnd: function () { playSoundEffect('correct'); }
+      });
+
+      speakTextSlow(`Heret dan susun ejaan ${item.word}`);
+    }
+
+    function checkDragAnswer() {
+      const item = ejaData[currentEjaIdx];
+      const container = document.getElementById('dragContainer');
+      const currentWord = Array.from(container.children).map(el => el.innerText).join('');
+      const card = document.getElementById('ejaCard');
+
+      if (currentWord === item.word) {
+        playSoundEffect('correct');
+        addStar();
+        triggerStarShower();
+        document.getElementById('ejaFeedback').innerHTML = '<span class="animate-pop text-xs text-emerald-600 font-bold bg-white/80 px-3 py-1 rounded-full border border-emerald-300 shadow">🎉 Syabas! Ejaan Betul! ⭐+1</span>';
+        speakTextSlow(`Hebat! Ejaan ${item.word} betul!`);
+      } else {
+        playSoundEffect('wrong');
+        card.classList.add('animate-shake');
+        document.getElementById('ejaFeedback').innerHTML = '<span class="text-xs text-red-500 font-bold bg-white/80 px-3 py-1 rounded-full border border-red-300 shadow">❌ Ejaan belum betul, cuba susun lagi!</span>';
+        speakTextSlow('Cuba susun semula adik!');
+        setTimeout(() => { card.classList.remove('animate-shake'); }, 800);
+      }
+    }
+
+    function nextEja() { if (currentEjaIdx < ejaData.length - 1) { currentEjaIdx++; setupDragGame(); } }
+    function prevEja() { if (currentEjaIdx > 0) { currentEjaIdx--; setupDragGame(); } }
+
+    /* ---------------- 6. KUIZ GAMBAR ---------------- */
+    const kuizPool = [
+      { name: 'Ayam', emoji: '🐓' },
+      { name: 'Bola', emoji: '⚽' },
+      { name: 'Ikan', emoji: '🐟' },
+      { name: 'Epal', emoji: '🍎' },
+      { name: 'Gajah', emoji: '🐘' },
+      { name: 'Kucing', emoji: '🐱' },
+      { name: 'Singa', emoji: '🦁' },
+      { name: 'Bintang', emoji: '⭐' }
+    ];
+    let currentCorrectTarget = null;
+
+    function openKuiz() { generateKuizQuestion(); showScreen('kuiz'); }
+
+    function generateKuizQuestion() {
+      document.getElementById('kuizFeedback').innerText = '';
+      const target = kuizPool[Math.floor(Math.random() * kuizPool.length)];
+      currentCorrectTarget = target;
+
+      document.getElementById('kuizQuestion').innerText = `Di manakah gambar ${target.name}?`;
+
+      let choices = [target];
+      while (choices.length < 4) {
+        const rand = kuizPool[Math.floor(Math.random() * kuizPool.length)];
+        if (!choices.includes(rand)) choices.push(rand);
+      }
+      choices.sort(() => Math.random() - 0.5);
+
+      const optionsDiv = document.getElementById('kuizOptions');
+      optionsDiv.innerHTML = '';
+
+      choices.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.className = "bg-white/90 border-4 border-purple-200 hover:border-purple-400 p-4 rounded-2xl flex flex-col items-center justify-center shadow-md bounce-hover";
+        btn.innerHTML = `<span class="text-5xl mb-1">${opt.emoji}</span>`;
+        btn.onclick = () => checkKuizAnswer(opt);
+        optionsDiv.appendChild(btn);
+      });
+
+      speakTextSlow(`Mana satu gambar ${target.name}?`);
+    }
+
+    function checkKuizAnswer(selected) {
+      if (selected.name === currentCorrectTarget.name) {
+        playSoundEffect('correct');
+        addStar();
+        triggerStarShower();
+        document.getElementById('kuizFeedback').innerHTML = '<span class="animate-pop text-xs text-emerald-600 font-bold bg-white/80 px-3 py-1 rounded-full border border-emerald-300 shadow">🎉 Betul! Bijaknya adik! ⭐+1</span>';
+        speakTextSlow('Betul! Syabas!');
+      } else {
+        playSoundEffect('wrong');
+        document.getElementById('kuizFeedback').innerHTML = '<span class="text-xs text-red-500 font-bold bg-white/80 px-3 py-1 rounded-full border border-red-300 shadow">❌ Alahai, salah. Bakal cuba lagi!</span>';
+        speakTextSlow('Salah, cuba lagi ya!');
+      }
+    }
+
+    /* ---------------- 7. MATEMATIK ---------------- */
+    let currentMathAns = 0;
+    const mathItemEmojis = ['🍎', '🍌', '⚽', '🚗', '🐥', '⭐'];
+
+    function openMath() { generateMathQuestion(); showScreen('math'); }
+
+    function generateMathQuestion() {
+      document.getElementById('mathFeedback').innerText = '';
+      const isAddition = Math.random() > 0.3;
+      const emoji = mathItemEmojis[Math.floor(Math.random() * mathItemEmojis.length)];
+
+      let a, b;
+      if (isAddition) {
+        a = Math.floor(Math.random() * 4) + 1;
+        b = Math.floor(Math.random() * 4) + 1;
+        currentMathAns = a + b;
+        document.getElementById('mathOp').innerText = '+';
+        document.getElementById('mathTextQuestion').innerText = `${a} + ${b} = Berapa?`;
+      } else {
+        a = Math.floor(Math.random() * 4) + 3;
+        b = Math.floor(Math.random() * (a - 1)) + 1;
+        currentMathAns = a - b;
+        document.getElementById('mathOp').innerText = '-';
+        document.getElementById('mathTextQuestion').innerText = `${a} - ${b} = Berapa?`;
+      }
+
+      document.getElementById('mathVisualA').innerText = emoji.repeat(a);
+      document.getElementById('mathVisualB').innerText = emoji.repeat(b);
+
+      let options = [currentMathAns];
+      while (options.length < 3) {
+        const randOpt = Math.floor(Math.random() * 8) + 1;
+        if (!options.includes(randOpt)) options.push(randOpt);
+      }
+      options.sort(() => Math.random() - 0.5);
+
+      const optionsDiv = document.getElementById('mathOptions');
+      optionsDiv.innerHTML = '';
+
+      options.forEach(num => {
+        const btn = document.createElement('button');
+        btn.className = "bg-sky-500 text-white border-b-4 border-sky-700 font-fun text-2xl py-3 rounded-2xl shadow-md bounce-hover";
+        btn.innerText = num;
+        btn.onclick = () => checkMathAnswer(num);
+        optionsDiv.appendChild(btn);
+      });
+
+      speakTextSlow(document.getElementById('mathTextQuestion').innerText);
+    }
+
+    function checkMathAnswer(selectedNum) {
+      if (selectedNum === currentMathAns) {
+        playSoundEffect('correct');
+        addStar();
+        triggerStarShower();
+        document.getElementById('mathFeedback').innerHTML = '<span class="animate-pop text-xs text-emerald-600 font-bold bg-white/80 px-3 py-1 rounded-full border border-emerald-300 shadow">🎉 Betul! Jawapan kamu tepat! ⭐+1</span>';
+        speakTextSlow('Pandainya! Jawapan betul!');
+      } else {
+        playSoundEffect('wrong');
+        document.getElementById('mathFeedback').innerHTML = '<span class="text-xs text-red-500 font-bold bg-white/80 px-3 py-1 rounded-full border border-red-300 shadow">❌ Salah, kira balik visual gambar di atas ya!</span>';
+        speakTextSlow('Kira semula gambar di atas ya!');
+      }
+    }
+
+    /* ---------------- 8. CHAT CIKGU AI ---------------- */
+    function askCikgu() {
+      const inputEl = document.getElementById('userInput');
+      const question = inputEl.value.trim();
+      if (!question) return;
+
+      const chatHistory = document.getElementById('chatHistory');
+      const userBubble = document.createElement('div');
+      userBubble.className = "bg-purple-500 text-white p-2.5 rounded-2xl text-xs font-semibold max-w-[85%] ml-auto shadow-sm animate-pop";
+      userBubble.innerText = question;
+      chatHistory.appendChild(userBubble);
+
+      db.ref('questions').push({ question: question, timestamp: Date.now() });
+      inputEl.value = '';
+
+      setTimeout(() => {
+        let reply = "Wah, soalan yang bagus! Jom belajar bersama Cikgu AI!";
+        const qLower = question.toLowerCase();
+
+        if (qLower.includes('ayam')) reply = "Ayam! A Y A M! 🐓 Ayam jantan berkokok kukuruyuk!";
+        else if (qLower.includes('bola')) reply = "Bola! B O L A! ⚽ Adik suka main bola tak?";
+        else if (qLower.includes('singa')) reply = "Singa! 🦁 Singa ialah raja hutan yang gagah!";
+
+        const aiBubble = document.createElement('div');
+        aiBubble.className = "bg-yellow-100/90 text-slate-800 p-2.5 rounded-2xl text-xs font-semibold max-w-[85%] border border-yellow-300 shadow-sm animate-pop";
+        aiBubble.innerText = reply;
+        chatHistory.appendChild(aiBubble);
+
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+        speakTextSlow(reply);
+      }, 500);
+    }
+  </script>
+</body>
+</html>
