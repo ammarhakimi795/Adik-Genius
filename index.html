@@ -13,7 +13,7 @@
   <style>
     body {
       font-family: 'Quicksand', sans-serif;
-      background: url('https://image.pollinations.ai/prompt/fairy%20tale%20village%20with%20mushroom%20houses%20rainbow%20castle%20cute%20animals%20colorful%20storybook%20illustration?width=1280&height=720&nologo=true') no-repeat center center fixed;
+      background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQYzlUcfTLziLSeDWjm1IDWylOFSORkj_ubXq9C0Qw7Q&s=10') no-repeat center center fixed;
       background-size: cover;
       user-select: none;
     }
@@ -39,6 +39,12 @@
     }
     .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 
+    @keyframes pulse-red {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+    }
+    .animate-mic-listening { animation: pulse-red 1.5s infinite; }
+
     .bg-fantasy-card {
       background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(8px);
@@ -47,12 +53,33 @@
     .sortable-ghost { opacity: 0.4; background-color: #fca5a5 !important; }
     .drag-tile { touch-action: none; cursor: grab; }
     .drag-tile:active { cursor: grabbing; }
+
+    /* Canvas Drawing Pad Styles */
+    #drawCanvas {
+      touch-action: none;
+      cursor: crosshair;
+    }
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
 <body class="min-h-screen flex justify-center items-center p-2 sm:p-6" onclick="initAudioContext()">
+<div id="nameModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300">
+<audio id="animal" src="audio/animal.mp3"></audio>
+        <div class="bg-white rounded-3xl p-6 md:p-8 w-11/12 max-w-md shadow-2xl border-4 border-pink-300 text-center relative transform transition-all animate-bounce-short">
+            <div class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-yellow-300 w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-md border-4 border-white">
+                🎈
+            </div>
+            <h2 class="font-fun text-2xl md:text-3xl text-pink-600 mt-6 mb-2">Hai Adik Genius! 👋</h2>
+            <p class="text-gray-600 text-sm md:text-base mb-6 font-semibold">Siapa nama adik? Masukkan nama di bawah ya:</p>
+            <input type="text" id="userNameInput" placeholder="Contoh: Ahmad / Sarah" 
+                class="w-full px-4 py-3 text-center text-lg font-bold text-gray-700 bg-pink-50 border-2 border-pink-200 rounded-2xl focus:outline-none focus:border-pink-500 mb-4 shadow-inner">
+            <button onclick="saveUserName()" class="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-fun text-xl py-3 rounded-2xl shadow-lg transform transition active:scale-95 border-b-4 border-pink-700">
+                Jom Mula! 🚀
+            </button>
+        </div>
+    </div>
 
   <div class="w-full max-w-md bg-white/70 backdrop-blur-md min-h-[844px] rounded-[40px] shadow-2xl flex flex-col justify-between overflow-hidden relative border-8 border-white/80">
 
@@ -66,12 +93,17 @@
           <span>⭐</span> <span id="starCounter">0</span>
         </div>
 
+        <!-- Language Switcher Button -->
+        <button onclick="toggleLanguage()" class="absolute top-3 right-3 bg-white text-slate-800 text-[11px] px-2.5 py-1 rounded-full font-bold shadow flex items-center gap-1 bounce-hover">
+          <span id="langFlag">🇲🇾</span> <span id="langText">BM</span>
+        </button>
+
         <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center border-4 border-yellow-200 shadow-inner mx-auto mt-3 mb-1 overflow-hidden">
-          <span class="text-4xl">🧑‍🎓</span>
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKtpwimyuLq63_NG_nsaa9nq23tMvzEB27R4p7qLVDZw&s=10" alt="Logo" class="w-full h-full object-cover">
         </div>
 
         <h1 class="font-fun text-xl tracking-wide drop-shadow-md text-white">ADIK GENIUS</h1>
-        <p class="font-bold text-[10px] bg-white/30 backdrop-blur-md px-3 py-0.5 rounded-full inline-block">
+        <p id="t-subtitle" class="font-bold text-[10px] bg-white/30 backdrop-blur-md px-3 py-0.5 rounded-full inline-block">
           Pusat Pembelajaran Interaktif 🌈
         </p>
       </div>
@@ -80,66 +112,77 @@
         <button onclick="openMembaca()" class="w-full bg-gradient-to-r from-pink-400 to-rose-500 text-white rounded-2xl p-2.5 shadow border-b-4 border-rose-700 bounce-hover flex items-center gap-3">
           <span class="text-2xl">🔤</span>
           <div class="text-left">
-            <span class="font-fun text-xs block leading-tight">1. KENAL HURUF (A - Z)</span>
-            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Slaid & Sebutan 🅰️</span>
+            <span id="t-menu1-title" class="font-fun text-xs block leading-tight">1. KENAL HURUF (A - Z)</span>
+            <span id="t-menu1-sub" class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Slaid & Sebutan 🅰️</span>
           </div>
         </button>
 
         <button onclick="openMengira()" class="w-full bg-gradient-to-r from-emerald-400 to-teal-500 text-white rounded-2xl p-2.5 shadow border-b-4 border-teal-700 bounce-hover flex items-center gap-3">
           <span class="text-2xl">🔢</span>
           <div class="text-left">
-            <span class="font-fun text-xs block leading-tight">2. MARI MENGIRA (1 - 100)</span>
-            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Nombor & Ejaan 🎯</span>
+            <span id="t-menu2-title" class="font-fun text-xs block leading-tight">2. MARI MENGIRA (1 - 100)</span>
+            <span id="t-menu2-sub" class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Nombor & Ejaan 🎯</span>
           </div>
         </button>
 
         <button onclick="openWarna()" class="w-full bg-gradient-to-r from-amber-400 to-orange-500 text-white rounded-2xl p-2.5 shadow border-b-4 border-orange-700 bounce-hover flex items-center gap-3">
           <span class="text-2xl">🎨</span>
           <div class="text-left">
-            <span class="font-fun text-xs block leading-tight">3. BENTUK & WARNA</span>
-            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Bentuk SVG & Warna 📐</span>
+            <span id="t-menu3-title" class="font-fun text-xs block leading-tight">3. BENTUK & WARNA</span>
+            <span id="t-menu3-sub" class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Bentuk SVG & Warna 📐</span>
           </div>
         </button>
 
         <button onclick="openHaiwan()" class="w-full bg-gradient-to-r from-blue-400 to-cyan-500 text-white rounded-2xl p-2.5 shadow border-b-4 border-cyan-700 bounce-hover flex items-center gap-3">
           <span class="text-2xl">🦁</span>
           <div class="text-left">
-            <span class="font-fun text-xs block leading-tight">4. HAIWAN & BUNYI</span>
-            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Bunyi Instant Web Audio 🔊</span>
+            <span id="t-menu4-title" class="font-fun text-xs block leading-tight">4. KENAL HAIWAN</span>
+            <span id="t-menu4-sub" class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Koleksi 30 Haiwan 🐾</span>
           </div>
         </button>
 
         <button onclick="openEja()" class="w-full bg-gradient-to-r from-red-400 to-pink-500 text-white rounded-2xl p-2.5 shadow border-b-4 border-pink-700 bounce-hover flex items-center gap-3">
           <span class="text-2xl">🧩</span>
           <div class="text-left">
-            <span class="font-fun text-xs block leading-tight">5. HERET & EJA (DRAG & DROP)</span>
-            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Susun Huruf Interaktif 🤏</span>
+            <span id="t-menu5-title" class="font-fun text-xs block leading-tight">5. HERET & EJA (DRAG & DROP)</span>
+            <span id="t-menu5-sub" class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">30 Soalan Ejaan Interaktif 🤏</span>
           </div>
         </button>
 
         <button onclick="openKuiz()" class="w-full bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-2xl p-2.5 shadow border-b-4 border-purple-800 bounce-hover flex items-center gap-3">
           <span class="text-2xl">🎯</span>
           <div class="text-left">
-            <span class="font-fun text-xs block leading-tight">6. KUIZ GAMBAR RAWAK</span>
-            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Soalan Rawak Gambar 🖼️</span>
+            <span id="t-menu6-title" class="font-fun text-xs block leading-tight">6. KUIZ GAMBAR RAWAK</span>
+            <span id="t-menu6-sub" class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Soalan Rawak Gambar 🖼️</span>
           </div>
         </button>
 
         <button onclick="openMath()" class="w-full bg-gradient-to-r from-sky-400 to-blue-600 text-white rounded-2xl p-2.5 shadow border-b-4 border-blue-800 bounce-hover flex items-center gap-3">
           <span class="text-2xl">➕</span>
           <div class="text-left">
-            <span class="font-fun text-xs block leading-tight">7. ASAS MATEMATIK VISUAL</span>
-            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Tambah & Tolak Visual 🍎</span>
+            <span id="t-menu7-title" class="font-fun text-xs block leading-tight">7. ASAS MATEMATIK VISUAL</span>
+            <span id="t-menu7-sub" class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Tambah & Tolak Visual 🍎</span>
           </div>
         </button>
 
-        <button onclick="showScreen('chat')" class="w-full bg-gradient-to-r from-indigo-500 to-slate-700 text-white rounded-2xl p-2.5 shadow border-b-4 border-slate-900 bounce-hover flex items-center gap-3">
-          <span class="text-2xl">🤖</span>
+        <!-- MENU 9: PAPAN MELUKIS & MEWARNA -->
+        <button onclick="openDraw()" class="w-full bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white rounded-2xl p-2.5 shadow border-b-4 border-fuchsia-800 bounce-hover flex items-center gap-3">
+          <span class="text-2xl">✏️</span>
           <div class="text-left">
-            <span class="font-fun text-xs block leading-tight">8. TANYA CIKGU AI</span>
-            <span class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Tanya Soalan 💬</span>
+            <span id="t-menu9-title" class="font-fun text-xs block leading-tight">9. MELUKIS & MEWARNA</span>
+            <span id="t-menu9-sub" class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">20 Garis Panduan Tracing 🖌️</span>
           </div>
         </button>
+
+        <!-- MENU 10: PENGECAMAN SUARA (SPEECH-TO-TEXT) -->
+        <button onclick="openVoice()" class="w-full bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-2xl p-2.5 shadow border-b-4 border-emerald-800 bounce-hover flex items-center gap-3">
+          <span class="text-2xl">🎙️</span>
+          <div class="text-left">
+            <span id="t-menu10-title" class="font-fun text-xs block leading-tight">10. SEBUT & SEMAK AI</span>
+            <span id="t-menu10-sub" class="text-[9px] bg-black/10 px-2 py-0.5 rounded-full inline-block">Pengecaman Suara AI 🗣️</span>
+          </div>
+        </button>
+
       </div>
 
       <div class="text-center text-[10px] font-bold text-slate-700 bg-white/70 py-1 rounded-full backdrop-blur-sm">
@@ -150,8 +193,8 @@
     <!-- 2. MEMBACA -->
     <div id="screen-membaca" class="flex-1 flex-col hidden p-4 justify-between">
       <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-pink-200">
-        <h2 class="font-fun text-base text-pink-600">🔤 Kenal Huruf</h2>
-        <button onclick="showScreen('home')" class="bg-pink-100 text-pink-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+        <h2 id="t-header-membaca" class="font-fun text-base text-pink-600">🔤 Kenal Huruf</h2>
+        <button onclick="showScreen('home')" class="btn-home-text bg-pink-100 text-pink-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
       </div>
 
       <div class="bg-fantasy-card border-4 border-pink-300 rounded-3xl p-6 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[350px] relative">
@@ -161,22 +204,22 @@
         <div class="text-xl font-fun text-slate-800 mb-1" id="letterWord">Ayam</div>
         <div class="text-xs font-bold text-pink-500 tracking-widest uppercase bg-white/80 px-4 py-1 rounded-full border border-pink-200" id="letterSpell">A - Y - A - M</div>
 
-        <button onclick="speakCurrentLetter()" class="mt-4 bg-pink-500 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow bounce-hover">
+        <button onclick="speakCurrentLetter()" class="btn-listen-text mt-4 bg-pink-500 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow bounce-hover">
           🔊 Dengar Sebutan
         </button>
       </div>
 
       <div class="flex gap-3">
-        <button onclick="prevLetter()" class="flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
-        <button onclick="nextLetter()" class="flex-1 bg-pink-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
+        <button onclick="prevLetter()" class="btn-prev-text flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
+        <button onclick="nextLetter()" class="btn-next-text flex-1 bg-pink-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
       </div>
     </div>
 
     <!-- 3. MENGIRA -->
     <div id="screen-mengira" class="flex-1 flex-col hidden p-4 justify-between">
       <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-emerald-200">
-        <h2 class="font-fun text-base text-emerald-600">🔢 Mari Mengira</h2>
-        <button onclick="showScreen('home')" class="bg-emerald-100 text-emerald-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+        <h2 id="t-header-mengira" class="font-fun text-base text-emerald-600">🔢 Mari Mengira</h2>
+        <button onclick="showScreen('home')" class="btn-home-text bg-emerald-100 text-emerald-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
       </div>
 
       <div class="bg-fantasy-card border-4 border-emerald-300 rounded-3xl p-6 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[350px] relative">
@@ -185,22 +228,22 @@
         <div class="text-xl font-fun text-slate-800 mb-2" id="numberSpellText">Satu</div>
         <div class="text-xs font-bold text-emerald-700 bg-white/80 px-4 py-1.5 rounded-2xl border border-emerald-200" id="numberLetterSpell">Ejaan: S - A - T - U</div>
 
-        <button onclick="speakCurrentNumber()" class="mt-4 bg-emerald-500 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow bounce-hover">
+        <button onclick="speakCurrentNumber()" class="btn-listen-text mt-4 bg-emerald-500 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow bounce-hover">
           🔊 Dengar Sebutan
         </button>
       </div>
 
       <div class="flex gap-3">
-        <button onclick="prevNumber()" class="flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
-        <button onclick="nextNumber()" class="flex-1 bg-emerald-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
+        <button onclick="prevNumber()" class="btn-prev-text flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
+        <button onclick="nextNumber()" class="btn-next-text flex-1 bg-emerald-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
       </div>
     </div>
 
     <!-- 4. BENTUK & WARNA -->
     <div id="screen-warna" class="flex-1 flex-col hidden p-4 justify-between">
       <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-amber-200">
-        <h2 class="font-fun text-base text-orange-600">🎨 Bentuk & Warna</h2>
-        <button onclick="showScreen('home')" class="bg-orange-100 text-orange-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+        <h2 id="t-header-warna" class="font-fun text-base text-orange-600">🎨 Bentuk & Warna</h2>
+        <button onclick="showScreen('home')" class="btn-home-text bg-orange-100 text-orange-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
       </div>
 
       <div class="bg-fantasy-card border-4 border-orange-300 rounded-3xl p-5 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[360px] relative">
@@ -211,60 +254,63 @@
         <div class="text-2xl font-fun text-slate-800" id="shapeName">Bulatan Merah</div>
         <div class="text-xs font-bold text-orange-600 bg-white/70 px-3 py-1 rounded-full mt-1" id="shapeDesc">Bentuk: Bulatan | Warna: Merah</div>
 
-        <button onclick="speakCurrentShape()" class="mt-4 bg-orange-500 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow bounce-hover">
+        <button onclick="speakCurrentShape()" class="btn-listen-text mt-4 bg-orange-500 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow bounce-hover">
           🔊 Dengar Sebutan
         </button>
       </div>
 
       <div class="flex gap-3">
-        <button onclick="prevShape()" class="flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
-        <button onclick="nextShape()" class="flex-1 bg-orange-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
+        <button onclick="prevShape()" class="btn-prev-text flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
+        <button onclick="nextShape()" class="btn-next-text flex-1 bg-orange-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
       </div>
     </div>
 
-    <!-- 5. HAIWAN & BUNYI (WEB AUDIO API FIX) -->
+    <!-- 5. KENAL HAIWAN -->
     <div id="screen-haiwan" class="flex-1 flex-col hidden p-4 justify-between">
       <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-cyan-200">
-        <h2 class="font-fun text-base text-cyan-600">🦁 Haiwan & Bunyi</h2>
-        <button onclick="showScreen('home')" class="bg-cyan-100 text-cyan-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+        <h2 id="t-header-haiwan" class="font-fun text-base text-cyan-600">🦁 Kenal Haiwan</h2>
+        <button onclick="showScreen('home')" class="btn-home-text bg-cyan-100 text-cyan-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
       </div>
 
       <div class="bg-fantasy-card border-4 border-cyan-300 rounded-3xl p-5 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[360px] relative">
-        <div class="absolute top-4 right-4 bg-cyan-100 text-cyan-600 px-3 py-1 rounded-full text-xs font-fun" id="animalTracker">1 / 8</div>
+        <div class="absolute top-4 right-4 bg-cyan-100 text-cyan-600 px-3 py-1 rounded-full text-xs font-fun" id="animalTracker">1 / 30</div>
 
-        <div class="text-7xl my-3 animate-bounce" id="animalEmoji">🦁</div>
-        <div class="text-2xl font-fun text-slate-800" id="animalName">Singa</div>
-        <div class="text-xs font-bold text-cyan-700 bg-white/70 px-3 py-1 rounded-full mt-1" id="animalCategory">Kategori: Haiwan Hutan</div>
+        <div class="text-7xl my-5 animate-bounce" id="animalEmoji">🦁</div>
+        <div class="text-3xl font-fun text-slate-800 mb-2" id="animalName">Singa</div>
+        <div class="text-xs font-bold text-cyan-700 bg-white/70 px-4 py-1.5 rounded-full mb-2" id="animalCategory">Kategori: Haiwan Hutan</div>
 
-        <button onclick="playAnimalAudioDirect()" class="mt-5 bg-cyan-500 hover:bg-cyan-600 text-white font-fun px-6 py-2.5 rounded-full text-xs shadow-md bounce-hover flex items-center gap-2 border-b-4 border-cyan-700">
-          🔊 Dengar Bunyi Haiwan
+        <button onclick="speakCurrentAnimal()" class="btn-listen-text mt-4 bg-cyan-500 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow bounce-hover">
+          🔊 Dengar Sebutan
         </button>
+<button onclick="playAnimalSoundEffect()" class="mt-2 bg-amber-500 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow bounce-hover">
+  🔊 Dengar Bunyi Haiwan
+</button>
       </div>
 
       <div class="flex gap-3">
-        <button onclick="prevAnimal()" class="flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
-        <button onclick="nextAnimal()" class="flex-1 bg-cyan-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
+        <button onclick="prevAnimal()" class="btn-prev-text flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
+        <button onclick="nextAnimal()" class="btn-next-text flex-1 bg-cyan-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
       </div>
     </div>
 
     <!-- 6. HERET & EJA -->
     <div id="screen-eja" class="flex-1 flex-col hidden p-4 justify-between">
       <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-red-200">
-        <h2 class="font-fun text-base text-red-600">🧩 Heret & Eja</h2>
-        <button onclick="showScreen('home')" class="bg-red-100 text-red-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+        <h2 id="t-header-eja" class="font-fun text-base text-red-600">🧩 Heret & Eja</h2>
+        <button onclick="showScreen('home')" class="btn-home-text bg-red-100 text-red-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
       </div>
 
       <div id="ejaCard" class="bg-fantasy-card border-4 border-red-300 rounded-3xl p-4 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[380px] relative">
-        <div class="absolute top-3 right-3 bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-fun" id="ejaTracker">1 / 8</div>
+        <div class="absolute top-3 right-3 bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-fun" id="ejaTracker">1 / 30</div>
 
         <div class="text-6xl my-1 animate-pulse" id="ejaEmoji">⚽</div>
-        <div class="text-xs font-fun text-slate-700 bg-white/80 px-3 py-1 rounded-full mb-3 border border-red-200">
+        <div id="t-eja-instruction" class="text-xs font-fun text-slate-700 bg-white/80 px-3 py-1 rounded-full mb-3 border border-red-200">
           🤏 Heret / susun huruf mengikut urutan!
         </div>
 
-        <div class="flex gap-2 justify-center mb-6 min-h-[50px] p-2 bg-red-50/60 rounded-2xl border-2 border-red-200 w-full" id="dragContainer"></div>
+        <div class="flex flex-wrap gap-1.5 justify-center mb-6 min-h-[50px] p-2 bg-red-50/60 rounded-2xl border-2 border-red-200 w-full" id="dragContainer"></div>
 
-        <button onclick="checkDragAnswer()" class="bg-emerald-500 text-white font-fun px-6 py-2 rounded-full text-xs shadow-md bounce-hover border-b-4 border-emerald-700">
+        <button onclick="checkDragAnswer()" class="btn-check-eja-text bg-emerald-500 text-white font-fun px-6 py-2 rounded-full text-xs shadow-md bounce-hover border-b-4 border-emerald-700">
           ✅ Semak Ejaan
         </button>
 
@@ -272,20 +318,20 @@
       </div>
 
       <div class="flex gap-3">
-        <button onclick="prevEja()" class="flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
-        <button onclick="nextEja()" class="flex-1 bg-red-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
+        <button onclick="prevEja()" class="btn-prev-text flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
+        <button onclick="nextEja()" class="btn-next-text flex-1 bg-red-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
       </div>
     </div>
 
     <!-- 7. KUIZ GAMBAR -->
     <div id="screen-kuiz" class="flex-1 flex-col hidden p-4 justify-between">
       <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-purple-200">
-        <h2 class="font-fun text-base text-purple-700">🎯 Kuiz Gambar Rawak</h2>
-        <button onclick="showScreen('home')" class="bg-purple-100 text-purple-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+        <h2 id="t-header-kuiz" class="font-fun text-base text-purple-700">🎯 Kuiz Gambar Rawak</h2>
+        <button onclick="showScreen('home')" class="btn-home-text bg-purple-100 text-purple-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
       </div>
 
       <div id="kuizCard" class="bg-fantasy-card border-4 border-purple-300 rounded-3xl p-5 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[380px] relative">
-        <div class="text-xs font-fun text-purple-600 bg-purple-100 px-3 py-1 rounded-full mb-2">Soalan Ujian 🧠</div>
+        <div id="t-kuiz-tag" class="text-xs font-fun text-purple-600 bg-purple-100 px-3 py-1 rounded-full mb-2">Soalan Ujian 🧠</div>
         <h3 class="text-lg font-fun text-slate-800 mb-4" id="kuizQuestion">Mana satu Gajah?</h3>
 
         <div class="grid grid-cols-2 gap-3 w-full" id="kuizOptions"></div>
@@ -293,7 +339,7 @@
         <div id="kuizFeedback" class="h-6 text-xs font-bold text-purple-600 mt-4"></div>
       </div>
 
-      <button onclick="generateKuizQuestion()" class="w-full bg-purple-600 text-white font-fun py-3 rounded-2xl text-xs shadow-md bounce-hover border-b-4 border-purple-800">
+      <button onclick="generateKuizQuestion()" class="btn-next-q-text w-full bg-purple-600 text-white font-fun py-3 rounded-2xl text-xs shadow-md bounce-hover border-b-4 border-purple-800">
         Soalan Seterusnya 🎲
       </button>
     </div>
@@ -301,12 +347,12 @@
     <!-- 8. MATEMATIK -->
     <div id="screen-math" class="flex-1 flex-col hidden p-4 justify-between">
       <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-sky-200">
-        <h2 class="font-fun text-base text-sky-600">➕ Asas Matematik</h2>
-        <button onclick="showScreen('home')" class="bg-sky-100 text-sky-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+        <h2 id="t-header-math" class="font-fun text-base text-sky-600">➕ Asas Matematik</h2>
+        <button onclick="showScreen('home')" class="btn-home-text bg-sky-100 text-sky-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
       </div>
 
       <div id="mathCard" class="bg-fantasy-card border-4 border-sky-300 rounded-3xl p-4 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[380px] relative">
-        <div class="text-xs font-fun text-sky-600 bg-sky-100 px-3 py-1 rounded-full mb-3">Kira & Jawab 🍎</div>
+        <div id="t-math-tag" class="text-xs font-fun text-sky-600 bg-sky-100 px-3 py-1 rounded-full mb-3">Kira & Jawab 🍎</div>
 
         <div class="flex items-center justify-center gap-2 mb-4 bg-white/80 p-3 rounded-2xl border border-sky-200 shadow-inner w-full">
           <div class="flex flex-wrap justify-center gap-1 text-2xl max-w-[90px]" id="mathVisualA">🍎🍎</div>
@@ -322,40 +368,320 @@
         <div id="mathFeedback" class="h-6 text-xs font-bold text-sky-600 mt-4"></div>
       </div>
 
-      <button onclick="generateMathQuestion()" class="w-full bg-sky-500 text-white font-fun py-3 rounded-2xl text-xs shadow-md bounce-hover border-b-4 border-sky-700">
+      <button onclick="generateMathQuestion()" class="btn-next-math-text w-full bg-sky-500 text-white font-fun py-3 rounded-2xl text-xs shadow-md bounce-hover border-b-4 border-sky-700">
         Soalan Matematik Baru 🎯
       </button>
     </div>
 
-    <!-- 9. CHAT CIKGU AI -->
-    <div id="screen-chat" class="flex-1 flex-col hidden p-4">
-      <div class="flex justify-between items-center mb-3 bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-purple-200">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center font-fun text-base">🤖</div>
-          <h3 class="font-fun text-purple-700 text-sm">Cikgu AI Genius</h3>
-        </div>
-        <button onclick="showScreen('home')" class="bg-purple-100 text-purple-600 text-xs px-3 py-1.5 rounded-xl font-bold border border-purple-300">
-          🏠 Utama
-        </button>
+ 
+    <!-- 10. SKRIN MELUKIS & MEWARNA (CANVAS SCRATCHPAD) -->
+    <div id="screen-draw" class="flex-1 flex-col hidden p-3 justify-between">
+      <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-2.5 rounded-2xl shadow-sm border-2 border-fuchsia-200">
+        <h2 id="t-header-draw" class="font-fun text-base text-fuchsia-600">✏️ Melukis & Mewarna</h2>
+        <button onclick="showScreen('home')" class="btn-home-text bg-fuchsia-100 text-fuchsia-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
       </div>
 
-      <div id="chatHistory" class="flex-1 bg-fantasy-card rounded-3xl p-4 overflow-y-auto mb-3 space-y-3 border-2 border-purple-200 shadow-inner">
-        <div class="bg-yellow-100/90 text-slate-800 p-3 rounded-2xl text-xs font-semibold max-w-[85%] border border-yellow-300 shadow">
-          Hai Adik comel! 🎈 Tanyakan soalan apa sahaja, Cikgu AI sedia bantu! 😊
+      <div class="bg-fantasy-card border-4 border-fuchsia-300 rounded-3xl p-3 shadow-xl flex flex-col items-center justify-between my-auto relative min-h-[460px]">
+        <div class="w-full flex justify-between items-center mb-1">
+          <span class="text-xs font-fun text-fuchsia-600 bg-fuchsia-100 px-3 py-0.5 rounded-full" id="drawTracker">1 / 20</span>
+          <span class="text-xs font-bold text-slate-800 font-fun" id="drawTitle">Huruf A</span>
+          <button onclick="speakCurrentDraw()" class="text-fuchsia-600 bg-fuchsia-100 hover:bg-fuchsia-200 px-2 py-0.5 rounded-full text-xs font-bold">🔊</button>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="relative bg-white rounded-2xl border-2 border-fuchsia-200 shadow-inner overflow-hidden flex items-center justify-center my-1" style="width: 280px; height: 280px;">
+          <canvas id="drawCanvas" width="280" height="280" class="rounded-2xl"></canvas>
+        </div>
+
+        <!-- Color Palette & Tools -->
+        <div class="w-full space-y-2 mt-1">
+          <div class="flex justify-center items-center gap-1.5">
+            <button onclick="setDrawColor('#ef4444')" class="w-7 h-7 rounded-full bg-red-500 border-2 border-white shadow bounce-hover"></button>
+            <button onclick="setDrawColor('#3b82f6')" class="w-7 h-7 rounded-full bg-blue-500 border-2 border-white shadow bounce-hover"></button>
+            <button onclick="setDrawColor('#10b981')" class="w-7 h-7 rounded-full bg-emerald-500 border-2 border-white shadow bounce-hover"></button>
+            <button onclick="setDrawColor('#eab308')" class="w-7 h-7 rounded-full bg-yellow-500 border-2 border-white shadow bounce-hover"></button>
+            <button onclick="setDrawColor('#a855f7')" class="w-7 h-7 rounded-full bg-purple-500 border-2 border-white shadow bounce-hover"></button>
+            <button onclick="setDrawColor('#ec4899')" class="w-7 h-7 rounded-full bg-pink-500 border-2 border-white shadow bounce-hover"></button>
+            <button onclick="setDrawColor('#000000')" class="w-7 h-7 rounded-full bg-black border-2 border-white shadow bounce-hover"></button>
+          </div>
+
+          <div class="flex justify-between items-center gap-2 px-2">
+            <div class="flex items-center gap-1">
+              <span class="text-[10px] font-bold text-slate-600">Saiz:</span>
+              <button onclick="setBrushSize(4)" class="bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md text-[10px] font-bold">Nipis</button>
+              <button onclick="setBrushSize(10)" class="bg-fuchsia-500 text-white px-2 py-0.5 rounded-md text-[10px] font-bold">Sedang</button>
+              <button onclick="setBrushSize(18)" class="bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md text-[10px] font-bold">Tebal</button>
+            </div>
+            <button onclick="clearCanvasDraw()" class="bg-rose-500 text-white px-3 py-1 rounded-xl text-xs font-fun shadow bounce-hover">
+              🗑️ Padam
+            </button>
+          </div>
         </div>
       </div>
 
-      <div class="flex gap-2 bg-white/90 p-2 rounded-full border-2 border-purple-200 shadow-sm backdrop-blur-md">
-        <input type="text" id="userInput" placeholder="Tulis soalan di sini..." class="flex-1 bg-transparent px-4 py-1.5 text-xs font-semibold focus:outline-none" onkeypress="if(event.key === 'Enter') askCikgu()">
-        <button onclick="askCikgu()" class="bg-purple-500 hover:bg-purple-600 text-white font-fun px-4 py-1.5 rounded-full text-xs shadow-md bounce-hover">
-          Hantar 🚀
+      <div class="flex gap-3">
+        <button onclick="prevDraw()" class="btn-prev-text flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
+        <button onclick="nextDraw()" class="btn-next-text flex-1 bg-fuchsia-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
+      </div>
+    </div>
+
+    <!-- 11. SKRIN PENGECAMAN SUARA (SPEECH-TO-TEXT) -->
+    <div id="screen-voice" class="flex-1 flex-col hidden p-4 justify-between">
+      <div class="flex justify-between items-center bg-white/80 backdrop-blur-md p-3 rounded-2xl shadow-sm border-2 border-teal-200">
+        <h2 id="t-header-voice" class="font-fun text-base text-teal-600">🎙️ Sebut & Semak AI</h2>
+        <button onclick="showScreen('home')" class="btn-home-text bg-teal-100 text-teal-600 text-xs px-3 py-1 rounded-xl font-bold">🏠 Utama</button>
+      </div>
+
+      <div id="voiceCard" class="bg-fantasy-card border-4 border-teal-300 rounded-3xl p-5 shadow-xl text-center flex flex-col items-center justify-center my-auto min-h-[380px] relative">
+        <div class="absolute top-4 right-4 bg-teal-100 text-teal-600 px-3 py-1 rounded-full text-xs font-fun" id="voiceTracker">1 / 20</div>
+        
+        <div id="t-voice-instruction" class="text-xs font-fun text-teal-700 bg-teal-100 px-3 py-1 rounded-full mb-3">
+          🗣️ Tekan mikrofon & sebut perkataan ini!
+        </div>
+
+        <div class="text-6xl my-2 animate-bounce" id="voiceEmoji">🐓</div>
+        <div class="text-3xl font-fun text-slate-800 mb-1" id="voiceTargetWord">Ayam</div>
+
+        <button onclick="speakCurrentVoiceTarget()" class="btn-listen-text bg-teal-500 text-white font-fun px-3 py-1 rounded-full text-[11px] shadow bounce-hover mb-4">
+          🔊 Dengar Sebutan
         </button>
+
+        <!-- Dynamic Mic Record Button -->
+        <button id="btnMicRecord" onclick="toggleVoiceRecognition()" class="w-20 h-20 bg-teal-500 hover:bg-teal-600 text-white rounded-full flex items-center justify-center shadow-lg bounce-hover transition-all duration-300">
+          <i class="fa-solid fa-microphone text-3xl"></i>
+        </button>
+
+        <!-- Live Voice Speech Status / Transcript -->
+        <div id="voiceTranscript" class="text-xs font-bold text-slate-600 mt-3 min-h-[20px]">
+          Tekan butang mikrofon di atas untuk mula...
+        </div>
+
+        <div id="voiceFeedback" class="h-6 text-xs font-bold text-emerald-600 mt-2 flex items-center gap-1 justify-center"></div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="prevVoice()" class="btn-prev-text flex-1 bg-white/90 text-slate-700 font-fun py-3 rounded-2xl text-xs shadow">⬅️ Sebelum</button>
+        <button onclick="nextVoice()" class="btn-next-text flex-1 bg-teal-500 text-white font-fun py-3 rounded-2xl text-xs bounce-hover shadow">Seterusnya ➡️</button>
       </div>
     </div>
 
   </div>
 
   <script>
+    // GLOBAL LANGUAGE STATE: 'ms' (Bahasa Melayu) or 'en' (English)
+    let currentLang = 'ms';
+
+    // TRANSLATIONS DATA DICTIONARY
+    const uiTranslations = {
+      ms: {
+        subtitle: "Pusat Pembelajaran Interaktif 🌈",
+        menu1Title: "1. KENAL HURUF (A - Z)",
+        menu1Sub: "Slaid & Sebutan 🅰️",
+        menu2Title: "2. MARI MENGIRA (1 - 100)",
+        menu2Sub: "Nombor & Ejaan 🎯",
+        menu3Title: "3. BENTUK & WARNA",
+        menu3Sub: "Bentuk SVG & Warna 📐",
+        menu4Title: "4. KENAL HAIWAN",
+        menu4Sub: "Koleksi 30 Haiwan 🐾",
+        menu5Title: "5. HERET & EJA (DRAG & DROP)",
+        menu5Sub: "30 Soalan Ejaan Interaktif 🤏",
+        menu6Title: "6. KUIZ GAMBAR RAWAK",
+        menu6Sub: "Soalan Rawak Gambar 🖼️",
+        menu7Title: "7. ASAS MATEMATIK VISUAL",
+        menu7Sub: "Tambah & Tolak Visual 🍎",
+        menu8Title: "8. MELUKIS & MEWARNA",
+        menu8Sub: "20 Garis Panduan Tracing 🖌️",
+        menu9Title: "9. SEBUT & SEMAK AI",
+        menu9Sub: "Pengecaman Suara AI 🗣️",
+
+        headerMembaca: "🔤 Kenal Huruf",
+        headerMengira: "🔢 Mari Mengira",
+        headerWarna: "🎨 Bentuk & Warna",
+        headerHaiwan: "🦁 Kenal Haiwan",
+        headerEja: "🧩 Heret & Eja",
+        headerKuiz: "🎯 Kuiz Gambar Rawak",
+        headerMath: "➕ Asas Matematik",
+        headerDraw: "✏️ Melukis & Mewarna",
+        headerVoice: "🎙️ Sebut & Semak AI",
+
+        btnHome: "🏠 Utama",
+        btnListen: "🔊 Dengar Sebutan",
+        btnPrev: "⬅️ Sebelum",
+        btnNext: "Seterusnya ➡️",
+        btnCheckEja: "✅ Semak Ejaan",
+        btnNextQ: "Soalan Seterusnya 🎲",
+        btnNextMath: "Soalan Matematik Baru 🎯",
+        btnSendChat: "Hantar 🚀",
+
+        ejaInstruction: "🤏 Heret / susun huruf mengikut urutan!",
+        voiceInstruction: "🗣️ Tekan mikrofon & sebut perkataan ini!",
+        kuizTag: "Soalan Ujian 🧠",
+        mathTag: "Kira & Jawab 🍎",
+        
+        spellLabel: "Ejaan",
+        catLabel: "Kategori",
+        shapeLabel: "Bentuk",
+        colorLabel: "Warna",
+
+        msgCorrect: "🎉 Syabas! Jawapan Betul! ⭐+1",
+        msgWrong: "❌ Alahai, salah. Cuba lagi ya!",
+        msgDragWrong: "❌ Ejaan belum betul, cuba susun lagi!",
+        msgMathWrong: "❌ Salah, kira balik visual gambar di atas ya!",
+        ttsCorrect: "Hebat! Jawapan betul!",
+        ttsWrong: "Cuba lagi ya adik!",
+
+        kuizAsk: "Di manakah gambar",
+        mathHowMuch: "Berapa?",
+
+        micPress: "Tekan butang mikrofon di atas untuk mula...",
+        micListening: "Mendengar... Sila sebut sekarang!",
+        micNotSupported: "Maaf, pelayar anda tidak menyokong pengecaman suara Web Speech API."
+      },
+      en: {
+        subtitle: "Interactive Learning Hub 🌈",
+        menu1Title: "1. LEARN LETTERS (A - Z)",
+        menu1Sub: "Slides & Pronunciation 🅰️",
+        menu2Title: "2. LET'S COUNT (1 - 100)",
+        menu2Sub: "Numbers & Spelling 🎯",
+        menu3Title: "3. SHAPES & COLORS",
+        menu3Sub: "SVG Shapes & Colors 📐",
+        menu4Title: "4. LEARN ANIMALS",
+        menu4Sub: "30 Animals Collection 🐾",
+        menu5Title: "5. DRAG & SPELL",
+        menu5Sub: "30 Interactive Spelling Questions 🤏",
+        menu6Title: "6. RANDOM IMAGE QUIZ",
+        menu6Sub: "Random Image Questions 🖼️",
+        menu7Title: "7. VISUAL MATH BASICS",
+        menu7Sub: "Visual Addition & Subtraction 🍎",
+        menu8Title: "8. ASK TEACHER AI",
+        menu8Sub: "Ask Questions 💬",
+        menu9Title: "9. DRAW & COLOR",
+        menu9Sub: "20 Tracing Guidelines 🖌️",
+        menu10Title: "10. SPEAK & CHECK AI",
+        menu10Sub: "AI Voice Recognition 🗣️",
+
+        headerMembaca: "🔤 Learn Letters",
+        headerMengira: "🔢 Let's Count",
+        headerWarna: "🎨 Shapes & Colors",
+        headerHaiwan: "🦁 Learn Animals",
+        headerEja: "🧩 Drag & Spell",
+        headerKuiz: "🎯 Random Image Quiz",
+        headerMath: "➕ Basic Math",
+        headerDraw: "✏️ Draw & Color",
+        headerVoice: "🎙️ Speak & Check AI",
+
+        btnHome: "🏠 Home",
+        btnListen: "🔊 Listen Pronunciation",
+        btnPrev: "⬅️ Previous",
+        btnNext: "Next ➡️",
+        btnCheckEja: "✅ Check Spelling",
+        btnNextQ: "Next Question 🎲",
+        btnNextMath: "New Math Question 🎯",
+        btnSendChat: "Send 🚀",
+
+        ejaInstruction: "🤏 Drag & arrange letters in order!",
+        voiceInstruction: "🗣️ Tap mic & speak this word!",
+        kuizTag: "Quiz Question 🧠",
+        mathTag: "Count & Answer 🍎",
+        chatPlaceholder: "Type your question here...",
+        chatWelcome: "Hello cute kid! 🎈 Ask any question, Teacher AI is here to help! 😊",
+
+        spellLabel: "Spelling",
+        catLabel: "Category",
+        shapeLabel: "Shape",
+        colorLabel: "Color",
+
+        msgCorrect: "🎉 Well done! Correct Answer! ⭐+1",
+        msgWrong: "❌ Oops, wrong. Try again!",
+        msgDragWrong: "❌ Spelling is not correct yet, try arranging again!",
+        msgMathWrong: "❌ Incorrect, recount the visual pictures above!",
+        ttsCorrect: "Awesome! Correct answer!",
+        ttsWrong: "Try again kiddo!",
+
+        kuizAsk: "Which one is the",
+        mathHowMuch: "How many?",
+
+        micPress: "Tap mic button above to start...",
+        micListening: "Listening... Speak now!",
+        micNotSupported: "Sorry, your browser does not support Web Speech API."
+      }
+    };
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'ms' ? 'en' : 'ms';
+      document.getElementById('langFlag').innerText = currentLang === 'ms' ? '🇲🇾' : '🇬🇧';
+      document.getElementById('langText').innerText = currentLang === 'ms' ? 'BM' : 'EN';
+      applyTranslations();
+      
+      // Refresh current active slide/view data
+      const visibleScreen = document.querySelector('[id^="screen-"]:not(.hidden)');
+      if (visibleScreen) {
+        const screenId = visibleScreen.id.replace('screen-', '');
+        if (screenId === 'membaca') updateLetterSlide();
+        else if (screenId === 'mengira') updateNumberSlide();
+        else if (screenId === 'warna') updateShapeSlide();
+        else if (screenId === 'haiwan') updateAnimalSlide();
+        else if (screenId === 'eja') setupDragGame();
+        else if (screenId === 'kuiz') generateKuizQuestion();
+        else if (screenId === 'math') generateMathQuestion();
+        else if (screenId === 'draw') updateDrawSlide();
+        else if (screenId === 'voice') updateVoiceSlide();
+      }
+    }
+
+    function applyTranslations() {
+      const t = uiTranslations[currentLang];
+      
+      document.getElementById('t-subtitle').innerText = t.subtitle;
+      document.getElementById('t-menu1-title').innerText = t.menu1Title;
+      document.getElementById('t-menu1-sub').innerText = t.menu1Sub;
+      document.getElementById('t-menu2-title').innerText = t.menu2Title;
+      document.getElementById('t-menu2-sub').innerText = t.menu2Sub;
+      document.getElementById('t-menu3-title').innerText = t.menu3Title;
+      document.getElementById('t-menu3-sub').innerText = t.menu3Sub;
+      document.getElementById('t-menu4-title').innerText = t.menu4Title;
+      document.getElementById('t-menu4-sub').innerText = t.menu4Sub;
+      document.getElementById('t-menu5-title').innerText = t.menu5Title;
+      document.getElementById('t-menu5-sub').innerText = t.menu5Sub;
+      document.getElementById('t-menu6-title').innerText = t.menu6Title;
+      document.getElementById('t-menu6-sub').innerText = t.menu6Sub;
+      document.getElementById('t-menu7-title').innerText = t.menu7Title;
+      document.getElementById('t-menu7-sub').innerText = t.menu7Sub;
+      document.getElementById('t-menu8-title').innerText = t.menu8Title;
+      document.getElementById('t-menu8-sub').innerText = t.menu8Sub;
+      document.getElementById('t-menu9-title').innerText = t.menu9Title;
+      document.getElementById('t-menu9-sub').innerText = t.menu9Sub;
+      document.getElementById('t-menu10-title').innerText = t.menu10Title;
+      document.getElementById('t-menu10-sub').innerText = t.menu10Sub;
+
+      document.getElementById('t-header-membaca').innerText = t.headerMembaca;
+      document.getElementById('t-header-mengira').innerText = t.headerMengira;
+      document.getElementById('t-header-warna').innerText = t.headerWarna;
+      document.getElementById('t-header-haiwan').innerText = t.headerHaiwan;
+      document.getElementById('t-header-eja').innerText = t.headerEja;
+      document.getElementById('t-header-kuiz').innerText = t.headerKuiz;
+      document.getElementById('t-header-math').innerText = t.headerMath;
+      document.getElementById('t-header-draw').innerText = t.headerDraw;
+      document.getElementById('t-header-voice').innerText = t.headerVoice;
+
+      document.querySelectorAll('.btn-home-text').forEach(el => el.innerText = t.btnHome);
+      document.querySelectorAll('.btn-listen-text').forEach(el => el.innerText = t.btnListen);
+      document.querySelectorAll('.btn-prev-text').forEach(el => el.innerText = t.btnPrev);
+      document.querySelectorAll('.btn-next-text').forEach(el => el.innerText = t.btnNext);
+      
+      document.querySelector('.btn-check-eja-text').innerText = t.btnCheckEja;
+      document.querySelector('.btn-next-q-text').innerText = t.btnNextQ;
+      document.querySelector('.btn-next-math-text').innerText = t.btnNextMath;
+      document.getElementById('btnSendChat').innerText = t.btnSendChat;
+
+      document.getElementById('t-eja-instruction').innerText = t.ejaInstruction;
+      document.getElementById('t-voice-instruction').innerText = t.voiceInstruction;
+      document.getElementById('t-kuiz-tag').innerText = t.kuizTag;
+      document.getElementById('t-math-tag').innerText = t.mathTag;
+      document.getElementById('userInput').placeholder = t.chatPlaceholder;
+      document.getElementById('chatWelcome').innerText = t.chatWelcome;
+    }
+
     // AUDIO CONTEXT INITIALIZATION FOR ALL BROWSERS
     let audioCtx = null;
     function initAudioContext() {
@@ -451,14 +777,19 @@
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'ms-MY'; utterance.pitch = 1.2; utterance.rate = 0.75;
+        utterance.lang = currentLang === 'ms' ? 'ms-MY' : 'en-US';
+        utterance.pitch = 1.2; 
+        utterance.rate = 0.75;
         if (onEndCallback) utterance.onend = onEndCallback;
         window.speechSynthesis.speak(utterance);
       } else if (onEndCallback) { onEndCallback(); }
     }
 
     function showScreen(screenId) {
-      document.querySelectorAll('#screen-home, #screen-membaca, #screen-mengira, #screen-warna, #screen-haiwan, #screen-eja, #screen-kuiz, #screen-math, #screen-chat').forEach(el => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      document.querySelectorAll('#screen-home, #screen-membaca, #screen-mengira, #screen-warna, #screen-haiwan, #screen-eja, #screen-kuiz, #screen-math, #screen-chat, #screen-draw, #screen-voice').forEach(el => {
         el.classList.add('hidden'); el.classList.remove('flex');
       });
       const active = document.getElementById(`screen-${screenId}`);
@@ -467,53 +798,59 @@
 
     /* ---------------- 1. MEMBACA ---------------- */
     const alphabetData = [
-      { letter: 'A', word: 'Ayam', emoji: '🐓', spell: 'A - Y - A - M' },
-      { letter: 'B', word: 'Bola', emoji: '⚽', spell: 'B - O - L - A' },
-      { letter: 'C', word: 'Cawan', emoji: '☕', spell: 'C - A - W - A - N' },
-      { letter: 'D', word: 'Dadu', emoji: '🎲', spell: 'D - A - D - U' },
-      { letter: 'E', word: 'Epal', emoji: '🍎', spell: 'E - P - A - L' },
-      { letter: 'F', word: 'Feri', emoji: '⛴️', spell: 'F - E - R - I' },
-      { letter: 'G', word: 'Gajah', emoji: '🐘', spell: 'G - A - J - A - H' },
-      { letter: 'H', word: 'Hujan', emoji: '🌧️', spell: 'H - U - J - A - N' },
-      { letter: 'I', word: 'Ikan', emoji: '🐟', spell: 'I - K - A - N' },
-      { letter: 'J', word: 'Jam', emoji: '⏰', spell: 'J - A - M' },
-      { letter: 'K', word: 'Kucing', emoji: '🐱', spell: 'K - U - C - I - N - G' },
-      { letter: 'L', word: 'Lilin', emoji: '🕯️', spell: 'L - I - L - I - N' },
-      { letter: 'M', word: 'Matahari', emoji: '☀️', spell: 'M - A - T - A - H - A - R - I' },
-      { letter: 'N', word: 'Nasi', emoji: '🍚', spell: 'N - A - S - I' },
-      { letter: 'O', word: 'Oren', emoji: '🍊', spell: 'O - R - E - N' },
-      { letter: 'P', word: 'Pisang', emoji: '🍌', spell: 'P - I - S - A - N - G' },
-      { letter: 'Q', word: 'Quran', emoji: '📖', spell: 'Q - U - R - A - N' },
-      { letter: 'R', word: 'Roti', emoji: '🍞', spell: 'R - O - T - I' },
-      { letter: 'S', word: 'Semut', emoji: '🐜', spell: 'S - E - M - U - T' },
-      { letter: 'T', word: 'Topi', emoji: '🧢', spell: 'T - O - P - I' },
-      { letter: 'U', word: 'Ular', emoji: '🐍', spell: 'U - L - A - R' },
-      { letter: 'V', word: 'Van', emoji: '🚐', spell: 'V - A - N' },
-      { letter: 'W', word: 'Wau', emoji: '🪁', spell: 'W - A - U' },
-      { letter: 'X', word: 'Xilofon', emoji: '🎼', spell: 'X - I - L - O - F - O - N' },
-      { letter: 'Y', word: 'Yo-yo', emoji: '🪀', spell: 'Y - O - Y - O' },
-      { letter: 'Z', word: 'Zirafah', emoji: '🦒', spell: 'Z - I - R - A - F - A - H' }
+      { letter: 'A', word: { ms: 'Ayam', en: 'Apple' }, emoji: { ms: '🐓', en: '🍎' } },
+      { letter: 'B', word: { ms: 'Bola', en: 'Ball' }, emoji: { ms: '⚽', en: '⚽' } },
+      { letter: 'C', word: { ms: 'Cawan', en: 'Cat' }, emoji: { ms: '☕', en: '🐱' } },
+      { letter: 'D', word: { ms: 'Dadu', en: 'Dog' }, emoji: { ms: '🎲', en: '🐶' } },
+      { letter: 'E', word: { ms: 'Epal', en: 'Elephant' }, emoji: { ms: '🍎', en: '🐘' } },
+      { letter: 'F', word: { ms: 'Feri', en: 'Fish' }, emoji: { ms: '⛴️', en: '🐟' } },
+      { letter: 'G', word: { ms: 'Gajah', en: 'Giraffe' }, emoji: { ms: '🐘', en: '🦒' } },
+      { letter: 'H', word: { ms: 'Hujan', en: 'Hat' }, emoji: { ms: '🌧️', en: '🧢' } },
+      { letter: 'I', word: { ms: 'Ikan', en: 'Ice' }, emoji: { ms: '🐟', en: '🧊' } },
+      { letter: 'J', word: { ms: 'Jam', en: 'Juice' }, emoji: { ms: '⏰', en: '🧃' } },
+      { letter: 'K', word: { ms: 'Kucing', en: 'Kite' }, emoji: { ms: '🐱', en: '🪁' } },
+      { letter: 'L', word: { ms: 'Lilin', en: 'Lion' }, emoji: { ms: '🕯️', en: '🦁' } },
+      { letter: 'M', word: { ms: 'Matahari', en: 'Monkey' }, emoji: { ms: '☀️', en: '🐒' } },
+      { letter: 'N', word: { ms: 'Nasi', en: 'Nest' }, emoji: { ms: '🍚', en: '🪹' } },
+      { letter: 'O', word: { ms: 'Oren', en: 'Orange' }, emoji: { ms: '🍊', en: '🍊' } },
+      { letter: 'P', word: { ms: 'Pisang', en: 'Penguin' }, emoji: { ms: '🍌', en: '🐧' } },
+      { letter: 'Q', word: { ms: 'Quran', en: 'Queen' }, emoji: { ms: '📖', en: '👸' } },
+      { letter: 'R', word: { ms: 'Roti', en: 'Rabbit' }, emoji: { ms: '🍞', en: '🐰' } },
+      { letter: 'S', word: { ms: 'Semut', en: 'Sun' }, emoji: { ms: '🐜', en: '☀️' } },
+      { letter: 'T', word: { ms: 'Topi', en: 'Tree' }, emoji: { ms: '🧢', en: '🌳' } },
+      { letter: 'U', word: { ms: 'Ular', en: 'Umbrella' }, emoji: { ms: '🐍', en: '☂️' } },
+      { letter: 'V', word: { ms: 'Van', en: 'Van' }, emoji: { ms: '🚐', en: '🚐' } },
+      { letter: 'W', word: { ms: 'Wau', en: 'Water' }, emoji: { ms: '🪁', en: '💧' } },
+      { letter: 'X', word: { ms: 'Xilofon', en: 'Xylophone' }, emoji: { ms: '🎼', en: '🎼' } },
+      { letter: 'Y', word: { ms: 'Yo-yo', en: 'Yacht' }, emoji: { ms: '🪀', en: '🛥️' } },
+      { letter: 'Z', word: { ms: 'Zirafah', en: 'Zebra' }, emoji: { ms: '🦒', en: '🦓' } }
     ];
     let currentLetterIdx = 0;
     function openMembaca() { currentLetterIdx = 0; updateLetterSlide(); showScreen('membaca'); }
     function updateLetterSlide() {
       const item = alphabetData[currentLetterIdx];
+      const wordStr = item.word[currentLang];
+      const emojiStr = item.emoji[currentLang];
+      const spellStr = wordStr.toUpperCase().split('').join(' - ');
+
       document.getElementById('letterTracker').innerText = `${currentLetterIdx + 1} / 26`;
       document.getElementById('letterDisplay').innerText = `${item.letter} ${item.letter.toLowerCase()}`;
-      document.getElementById('letterEmoji').innerText = item.emoji;
-      document.getElementById('letterWord').innerText = item.word;
-      document.getElementById('letterSpell').innerText = item.spell;
+      document.getElementById('letterEmoji').innerText = emojiStr;
+      document.getElementById('letterWord').innerText = wordStr;
+      document.getElementById('letterSpell').innerText = spellStr;
       speakCurrentLetter();
     }
     function speakCurrentLetter() {
       const item = alphabetData[currentLetterIdx];
-      speakTextSlow(`${item.letter}. ${item.word}. ${item.spell.replaceAll('-', ' ')}.`);
+      const wordStr = item.word[currentLang];
+      const spellStr = wordStr.toUpperCase().split('').join(' ');
+      speakTextSlow(`${item.letter}. ${wordStr}. ${spellStr}.`);
     }
     function nextLetter() { if (currentLetterIdx < alphabetData.length - 1) { currentLetterIdx++; updateLetterSlide(); } }
     function prevLetter() { if (currentLetterIdx > 0) { currentLetterIdx--; updateLetterSlide(); } }
 
     /* ---------------- 2. MENGIRA ---------------- */
-    function numberToWords(num) {
+    function numberToWordsMs(num) {
       const sa = ["", "satu", "dua", "tiga", "empat", "lima", "enam", "tujuh", "lapan", "sembilan", "sepuluh", "sebelas"];
       if (num <= 11) return sa[num];
       if (num < 20) return sa[num - 10] + " belas";
@@ -525,19 +862,38 @@
       if (num === 100) return "seratus";
       return num.toString();
     }
+
+    function numberToWordsEn(num) {
+      const ones = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+      const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+      if (num < 20) return ones[num];
+      if (num < 100) {
+        let t = Math.floor(num / 10);
+        let r = num % 10;
+        return tens[t] + (r > 0 ? " " + ones[r] : "");
+      }
+      if (num === 100) return "one hundred";
+      return num.toString();
+    }
+
     let currentNumberVal = 1;
-    function openMengira() { currentNumberVal = 1; updateNumberSlide(); showScreen('mengira'); }
+    function openMengira() { 
+      currentNumberVal = 1; 
+      showScreen('mengira'); 
+      updateNumberSlide(); 
+    }
     function updateNumberSlide() {
-      const wordText = numberToWords(currentNumberVal).trim();
+      const wordText = (currentLang === 'ms' ? numberToWordsMs(currentNumberVal) : numberToWordsEn(currentNumberVal)).trim();
       const spelledLetters = wordText.replace(/\s+/g, '').toUpperCase().split('').join(' - ');
+      const spellLabel = uiTranslations[currentLang].spellLabel;
+
       document.getElementById('numberTracker').innerText = `${currentNumberVal} / 100`;
       document.getElementById('numberDisplay').innerText = currentNumberVal;
       document.getElementById('numberSpellText').innerText = wordText.toUpperCase();
-      document.getElementById('numberLetterSpell').innerText = `Ejaan: ${spelledLetters}`;
-      speakCurrentNumber();
+      document.getElementById('numberLetterSpell').innerText = `${spellLabel}: ${spelledLetters}`;
     }
     function speakCurrentNumber() {
-      const wordText = numberToWords(currentNumberVal).trim();
+      const wordText = (currentLang === 'ms' ? numberToWordsMs(currentNumberVal) : numberToWordsEn(currentNumberVal)).trim();
       speakTextSlow(`${currentNumberVal}. ${wordText}.`);
     }
     function nextNumber() { if (currentNumberVal < 100) { currentNumberVal++; updateNumberSlide(); } }
@@ -545,130 +901,146 @@
 
     /* ---------------- 3. BENTUK & WARNA ---------------- */
     const shapeData = [
-      { name: 'Bulatan Merah', desc: 'Bentuk: Bulatan | Warna: Merah', color: '#ef4444', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="currentColor"/></svg>' },
-      { name: 'Segi Empat Biru', desc: 'Bentuk: Segi Empat Sama | Warna: Biru', color: '#3b82f6', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><rect x="10" y="10" width="80" height="80" rx="8" fill="currentColor"/></svg>' },
-      { name: 'Segi Tiga Hijau', desc: 'Bentuk: Segi Tiga | Warna: Hijau', color: '#10b981', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,10 90,90 10,90" fill="currentColor"/></svg>' },
-      { name: 'Bintang Kuning', desc: 'Bentuk: Bintang | Warna: Kuning', color: '#eab308', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" fill="currentColor"/></svg>' },
-      { name: 'Hati Merah Jambu', desc: 'Bentuk: Hati | Warna: Merah Jambu', color: '#ec4899', svg: '<svg class="w-28 h-28" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>' },
-      { name: 'Bujur Ungu', desc: 'Bentuk: Bujur (Oval) | Warna: Ungu', color: '#a855f7', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="30" fill="currentColor"/></svg>' },
-      { name: 'Segi Empat Tepat Jingga', desc: 'Bentuk: Segi Empat Tepat | Warna: Jingga', color: '#f97316', svg: '<svg class="w-32 h-24" viewBox="0 0 120 80"><rect x="5" y="5" width="110" height="70" rx="8" fill="currentColor"/></svg>' },
-      { name: 'Berlian Coklat', desc: 'Bentuk: Berlian | Warna: Coklat', color: '#78350f', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,5 95,50 50,95 5,50" fill="currentColor"/></svg>' },
-      { name: 'Pentagon Sian', desc: 'Bentuk: Segi Lima | Warna: Sian', color: '#06b6d4', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,5 95,38 78,90 22,90 5,38" fill="currentColor"/></svg>' },
-      { name: 'Heksagon Indigo', desc: 'Bentuk: Segi Enam | Warna: Indigo', color: '#6366f1', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="currentColor"/></svg>' }
+      { name: { ms: 'Bulatan Merah', en: 'Red Circle' }, shape: { ms: 'Bulatan', en: 'Circle' }, colorName: { ms: 'Merah', en: 'Red' }, color: '#ef4444', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="currentColor"/></svg>' },
+      { name: { ms: 'Segi Empat Biru', en: 'Blue Square' }, shape: { ms: 'Segi Empat Sama', en: 'Square' }, colorName: { ms: 'Biru', en: 'Blue' }, color: '#3b82f6', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><rect x="10" y="10" width="80" height="80" rx="8" fill="currentColor"/></svg>' },
+      { name: { ms: 'Segi Tiga Hijau', en: 'Green Triangle' }, shape: { ms: 'Segi Tiga', en: 'Triangle' }, colorName: { ms: 'Hijau', en: 'Green' }, color: '#10b981', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,10 90,90 10,90" fill="currentColor"/></svg>' },
+      { name: { ms: 'Bintang Kuning', en: 'Yellow Star' }, shape: { ms: 'Bintang', en: 'Star' }, colorName: { ms: 'Kuning', en: 'Yellow' }, color: '#eab308', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,5 64,36 98,36 70,57 81,91 50,70 19,91 30,57 2,36 36,36" fill="currentColor"/></svg>' },
+      { name: { ms: 'Hati Merah Jambu', en: 'Pink Heart' }, shape: { ms: 'Hati', en: 'Heart' }, colorName: { ms: 'Merah Jambu', en: 'Pink' }, color: '#ec4899', svg: '<svg class="w-28 h-28" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>' },
+      { name: { ms: 'Bujur Ungu', en: 'Purple Oval' }, shape: { ms: 'Bujur', en: 'Oval' }, colorName: { ms: 'Ungu', en: 'Purple' }, color: '#a855f7', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="45" ry="30" fill="currentColor"/></svg>' },
+      { name: { ms: 'Segi Empat Tepat Jingga', en: 'Orange Rectangle' }, shape: { ms: 'Segi Empat Tepat', en: 'Rectangle' }, colorName: { ms: 'Jingga', en: 'Orange' }, color: '#f97316', svg: '<svg class="w-32 h-24" viewBox="0 0 120 80"><rect x="5" y="5" width="110" height="70" rx="8" fill="currentColor"/></svg>' },
+      { name: { ms: 'Berlian Coklat', en: 'Brown Diamond' }, shape: { ms: 'Berlian', en: 'Diamond' }, colorName: { ms: 'Coklat', en: 'Brown' }, color: '#78350f', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,5 95,50 50,95 5,50" fill="currentColor"/></svg>' },
+      { name: { ms: 'Pentagon Sian', en: 'Cyan Pentagon' }, shape: { ms: 'Pentagon', en: 'Pentagon' }, colorName: { ms: 'Sian', en: 'Cyan' }, color: '#06b6d4', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,5 95,38 78,90 22,90 5,38" fill="currentColor"/></svg>' },
+      { name: { ms: 'Heksagon Indigo', en: 'Indigo Hexagon' }, shape: { ms: 'Heksagon', en: 'Hexagon' }, colorName: { ms: 'Indigo', en: 'Indigo' }, color: '#6366f1', svg: '<svg class="w-28 h-28" viewBox="0 0 100 100"><polygon points="50,5 90,25 90,75 50,95 10,75 10,25" fill="currentColor"/></svg>' }
     ];
 
     let currentShapeIdx = 0;
     function openWarna() { currentShapeIdx = 0; updateShapeSlide(); showScreen('warna'); }
     function updateShapeSlide() {
       const item = shapeData[currentShapeIdx];
+      const t = uiTranslations[currentLang];
+      const nameStr = item.name[currentLang];
+      const descStr = `${t.shapeLabel}: ${item.shape[currentLang]} | ${t.colorLabel}: ${item.colorName[currentLang]}`;
+
       document.getElementById('shapeTracker').innerText = `${currentShapeIdx + 1} / ${shapeData.length}`;
       const container = document.getElementById('shapeSvgContainer');
       container.innerHTML = item.svg;
       container.firstElementChild.style.color = item.color;
-      document.getElementById('shapeName').innerText = item.name;
-      document.getElementById('shapeDesc').innerText = item.desc;
+      document.getElementById('shapeName').innerText = nameStr;
+      document.getElementById('shapeDesc').innerText = descStr;
       speakCurrentShape();
     }
     function speakCurrentShape() {
       const item = shapeData[currentShapeIdx];
-      speakTextSlow(`${item.name}. ${item.desc}.`);
+      const t = uiTranslations[currentLang];
+      const nameStr = item.name[currentLang];
+      const descStr = `${t.shapeLabel}: ${item.shape[currentLang]}. ${t.colorLabel}: ${item.colorName[currentLang]}`;
+      speakTextSlow(`${nameStr}. ${descStr}.`);
     }
     function nextShape() { if (currentShapeIdx < shapeData.length - 1) { currentShapeIdx++; updateShapeSlide(); } }
     function prevShape() { if (currentShapeIdx > 0) { currentShapeIdx--; updateShapeSlide(); } }
 
-    /* ---------------- 4. HAIWAN & BUNYI (WEB AUDIO SYNTHESIZER FIX) ---------------- */
+    /* ---------------- 4. HAIWAN (30 EKOR HAIWAN) ---------------- */
     const animalData = [
-      { name: 'Kucing', cat: 'Haiwan Peliharaan', emoji: '🐱', soundType: 'meow' },
-      { name: 'Anjing', cat: 'Haiwan Peliharaan', emoji: '🐶', soundType: 'bark' },
-      { name: 'Ayam', cat: 'Haiwan Ternakan', emoji: '🐓', soundType: 'rooster' },
-      { name: 'Lembu', cat: 'Haiwan Ternakan', emoji: '🐮', soundType: 'cow' },
-      { name: 'Singa', cat: 'Haiwan Hutan', emoji: '🦁', soundType: 'roar' },
-      { name: 'Monyet', cat: 'Haiwan Hutan', emoji: '🐒', soundType: 'monkey' },
-      { name: 'Kambing', cat: 'Haiwan Ternakan', emoji: '🐐', soundType: 'goat' },
-      { name: 'Gajah', cat: 'Haiwan Hutan', emoji: '🐘', soundType: 'trumpet' }
+      { name: { ms: 'Singa', en: 'Lion' }, cat: { ms: 'Haiwan Hutan', en: 'Wild Animal' }, emoji: '🦁', sound: 'soundzee-lion-snarl-growl-354324.mp3' },
+      { name: { ms: 'Harimau', en: 'Tiger' }, cat: { ms: 'Haiwan Hutan', en: 'Wild Animal' }, emoji: '🐅', sound: 'dffdv-tiger-attack-195840.mp3' },
+      { name: { ms: 'Gajah', en: 'Elephant' }, cat: { ms: 'Haiwan Hutan', en: 'Wild Animal' }, emoji: '🐘', sound: 'dragon-studio-elephant-trumpeting-494313.mp3' },
+      { name: { ms: 'Kucing', en: 'Cat' }, cat: { ms: 'Haiwan Peliharaan', en: 'Pet' }, emoji: '🐱', sound: 'dragon-studio-cat-meow-401729.mp3' },
+      { name: { ms: 'Anjing', en: 'Dog' }, cat: { ms: 'Haiwan Peliharaan', en: 'Pet' }, emoji: '🐶', sound: 'dragon-studio-dog-barking-406629.mp3' },
+      { name: { ms: 'Ayam', en: 'Chicken' }, cat: { ms: 'Haiwan Ternakan', en: 'Farm Animal' }, emoji: '🐔', sound: 'wings_of_freedom-chicken-sound-402826.mp3' },
+      { name: { ms: 'Lembu', en: 'Cow' }, cat: { ms: 'Haiwan Ternakan', en: 'Farm Animal' }, emoji: '🐮', sound: 'dragon-studio-cow-moo-1-472361.mp3' },
+      { name: { ms: 'Kambing', en: 'Goat' }, cat: { ms: 'Haiwan Ternakan', en: 'Farm Animal' }, emoji: '🐐', sound: 'dragon-studio-goat-sound-390298.mp3' },
+      { name: { ms: 'Monyet', en: 'Monkey' }, cat: { ms: 'Haiwan Hutan', en: 'Wild Animal' }, emoji: '🐒', sound: 'ribhavagrawal-monkey-noise-sound-effect.mp3' },
+      { name: { ms: 'Kuda', en: 'Horse' }, cat: { ms: 'Haiwan Ternakan', en: 'Farm Animal' }, emoji: '🐴', sound: 'dragon-studio-horse-neigh-515279.mp3' },
+      { name: { ms: 'Zirafah', en: 'Giraffe' }, cat: { ms: 'Haiwan Hutan', en: 'Wild Animal' }, emoji: '🦒', sound: 'jerryblessed-giraffe-snorting-and-chewing.mp3' },
+      { name: { ms: 'Badak Sumbu', en: 'Rhino' }, cat: { ms: 'Haiwan Hutan', en: 'Wild Animal' }, emoji: '🦏', sound: 'sondangsirait419-badak-220048.mp3' },
+      { name: { ms: 'Zebra', en: 'Zebra' }, cat: { ms: 'Haiwan Hutan', en: 'Wild Animal' }, emoji: '🦓', sound: 'dragon-studio-horse-neigh-515279.mp3' },
+      { name: { ms: 'Panda', en: 'Panda' }, cat: { ms: 'Haiwan Hutan', en: 'Wild Animal' }, emoji: '🐼', sound: 'universfield-bear-growl-191995.mp3' },
+      { name: { ms: 'Koala', en: 'Koala' }, cat: { ms: 'Haiwan Hutan', en: 'Wild Animal' }, emoji: '🐨', sound: 'mixkit-hard-pop-click-2364.mp3' },
+      { name: { ms: 'Beruang', en: 'Bear' }, cat: { ms: 'Haiwan Hutan', en: 'Wild Animal' }, emoji: '🐻', sound: 'universfield-bear-growl-191995.mp3' },
+      { name: { ms: 'Serigala', en: 'Wolf' }, cat: { ms: 'Haiwan Hutan', en: 'Wild Animal' }, emoji: '🐺', sound: 'karim_alaoui-creepy-wolf-howl-sound-effect-585945.mp3' },
+      { name: { ms: 'Rubah', en: 'Fox' }, cat: { ms: 'Haiwan Hutan', en: 'Wild Animal' }, emoji: '🦊', sound: 'animals_fox_red_mating_call_long.mp3' },
+      { name: { ms: 'Biri-biri', en: 'Sheep' }, cat: { ms: 'Haiwan Ternakan', en: 'Farm Animal' }, emoji: '🐑', sound: 'stu9-sheep-352668.mp3' },
+      { name: { ms: 'Babi Hutan', en: 'Boar' }, cat: { ms: 'Haiwan Hutan', en: 'Wild Animal' }, emoji: '🐗', sound: 'mixkit-pig-grunting-3.mp3' },
+      { name: { ms: 'Ular', en: 'Snake' }, cat: { ms: 'Haiwan Reptilia', en: 'Reptile' }, emoji: '🐍', sound: 'freesound_community-snake-hiss-95241.mp3' },
+      { name: { ms: 'Buaya', en: 'Crocodile' }, cat: { ms: 'Haiwan Reptilia', en: 'Reptile' }, emoji: '🐊', sound: 'flutie8211-alligator-bellow-495390.mp3' },
+      { name: { ms: 'Kura-kura', en: 'Turtle' }, cat: { ms: 'Haiwan Reptilia', en: 'Reptile' }, emoji: '🐢', sound: 'mixkit-hard-pop-click-2364.mp3' },
+      { name: { ms: 'Katak', en: 'Frog' }, cat: { ms: 'Haiwan Amfibia', en: 'Amphibian' }, emoji: '🐸', sound: 'dragon-studio-frog-croaking-sound-effect-322956.mp3' },
+      { name: { ms: 'Burung Hantu', en: 'Owl' }, cat: { ms: 'Haiwan Burung', en: 'Bird' }, emoji: '🦉', sound: 'lazychillzone-owl-hooting-223549.mp3' },
+      { name: { ms: 'Burung Helang', en: 'Eagle' }, cat: { ms: 'Haiwan Burung', en: 'Bird' }, emoji: '🦅', sound: 'koiroylers-eagle-355831.mp3' },
+      { name: { ms: 'Penguin', en: 'Penguin' }, cat: { ms: 'Haiwan Burung', en: 'Bird' }, emoji: '🐧', sound: 'sondangsirait419-pinguin-220042.mp3' },
+      { name: { ms: 'Ikan Lumba-lumba', en: 'Dolphin' }, cat: { ms: 'Haiwan Laut', en: 'Sea Animal' }, emoji: '🐬', sound: 'freesound_community-dolphin-noise-6968.mp3' },
+      { name: { ms: 'Ikan Paus', en: 'Whale' }, cat: { ms: 'Haiwan Laut', en: 'Sea Animal' }, emoji: '🐳', sound: 'dragon-studio-creepy-whale-song-323612.mp3' },
+      { name: { ms: 'Sotong', en: 'Squid' }, cat: { ms: 'Haiwan Laut', en: 'Sea Animal' }, emoji: '🦑', sound: 'mixkit-hard-pop-click-2364.mp3' }
     ];
 
     let currentAnimalIdx = 0;
     function openHaiwan() { currentAnimalIdx = 0; updateAnimalSlide(); showScreen('haiwan'); }
     function updateAnimalSlide() {
       const item = animalData[currentAnimalIdx];
+      const t = uiTranslations[currentLang];
+
       document.getElementById('animalTracker').innerText = `${currentAnimalIdx + 1} / ${animalData.length}`;
       document.getElementById('animalEmoji').innerText = item.emoji;
-      document.getElementById('animalName').innerText = item.name;
-      document.getElementById('animalCategory').innerText = `Kategori: ${item.cat}`;
-      speakTextSlow(`${item.name}`);
+      document.getElementById('animalName').innerText = item.name[currentLang];
+      document.getElementById('animalCategory').innerText = `${t.catLabel}: ${item.cat[currentLang]}`;
+      speakCurrentAnimal();
     }
+    function speakCurrentAnimal() {
+  const item = animalData[currentAnimalIdx];
+  const t = uiTranslations[currentLang];
+  const nameStr = item.name[currentLang];
+  const catStr = `${t.catLabel}: ${item.cat[currentLang]}`;
+  speakTextSlow(`${nameStr}. ${catStr}.`);
+}
+function playAnimalSoundEffect() {
+  const item = animalData[currentAnimalIdx];
+  
+  if (item.sound && item.sound.trim() !== "") {
+    const audio = new Audio(item.sound);
+    audio.play().catch(error => {
+      console.warn("Gagal main audio luar, guna sebutan suara.", error);
+      speakTextSlow(item.name[currentLang]);
+    });
+  } else {
+    speakTextSlow(item.name[currentLang]);
+  }
+}
 
-    function playAnimalAudioDirect() {
-      initAudioContext();
-      const item = animalData[currentAnimalIdx];
-      
-      // Menggunakan Synthesizer Web Audio API supaya bunyi 100% keluar di mana-mana peranti
-      const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
+function nextAnimal() { if (currentAnimalIdx < animalData.length - 1) { currentAnimalIdx++; updateAnimalSlide(); } }
+function prevAnimal() { if (currentAnimalIdx > 0) { currentAnimalIdx--; updateAnimalSlide(); } }
 
-      if (item.soundType === 'meow') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(700, now);
-        osc.frequency.exponentialRampToValueAtTime(400, now + 0.5);
-        gain.gain.setValueAtTime(0.4, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-        osc.start(now); osc.stop(now + 0.5);
-      } else if (item.soundType === 'bark') {
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(300, now);
-        osc.frequency.exponentialRampToValueAtTime(100, now + 0.2);
-        gain.gain.setValueAtTime(0.5, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-        osc.start(now); osc.stop(now + 0.2);
-      } else if (item.soundType === 'cow') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(150, now);
-        osc.frequency.linearRampToValueAtTime(130, now + 0.8);
-        gain.gain.setValueAtTime(0.6, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
-        osc.start(now); osc.stop(now + 0.8);
-      } else if (item.soundType === 'roar') {
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(120, now);
-        osc.frequency.linearRampToValueAtTime(60, now + 1.0);
-        gain.gain.setValueAtTime(0.7, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
-        osc.start(now); osc.stop(now + 1.0);
-      } else if (item.soundType === 'rooster') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(400, now);
-        osc.frequency.linearRampToValueAtTime(800, now + 0.3);
-        osc.frequency.linearRampToValueAtTime(600, now + 0.7);
-        gain.gain.setValueAtTime(0.5, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
-        osc.start(now); osc.stop(now + 0.7);
-      } else {
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(250, now);
-        osc.frequency.linearRampToValueAtTime(350, now + 0.4);
-        gain.gain.setValueAtTime(0.4, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
-        osc.start(now); osc.stop(now + 0.4);
-      }
-    }
-
-    function nextAnimal() { if (currentAnimalIdx < animalData.length - 1) { currentAnimalIdx++; updateAnimalSlide(); } }
-    function prevAnimal() { if (currentAnimalIdx > 0) { currentAnimalIdx--; updateAnimalSlide(); } }
-
-    /* ---------------- 5. HERET & EJA ---------------- */
+    /* ---------------- 5. HERET & EJA (30 SOALAN) ---------------- */
     const ejaData = [
-      { word: 'BOLA', emoji: '⚽' },
-      { word: 'AYAM', emoji: '🐓' },
-      { word: 'IKAN', emoji: '🐟' },
-      { word: 'EPAL', emoji: '🍎' },
-      { word: 'TOPI', emoji: '🧢' },
-      { word: 'ROTI', emoji: '🍞' },
-      { word: 'KUCING', emoji: '🐱' },
-      { word: 'GAJAH', emoji: '🐘' }
+      { word: { ms: 'BOLA', en: 'BALL' }, emoji: '⚽' },
+      { word: { ms: 'AYAM', en: 'DUCK' }, emoji: '🦆' },
+      { word: { ms: 'IKAN', en: 'FISH' }, emoji: '🐟' },
+      { word: { ms: 'EPAL', en: 'APPLE' }, emoji: '🍎' },
+      { word: { ms: 'TOPI', en: 'HAT' }, emoji: '🧢' },
+      { word: { ms: 'ROTI', en: 'BREAD' }, emoji: '🍞' },
+      { word: { ms: 'KUCING', en: 'CAT' }, emoji: '🐱' },
+      { word: { ms: 'GAJAH', en: 'FROG' }, emoji: '🐸' },
+      { word: { ms: 'SINGA', en: 'LION' }, emoji: '🦁' },
+      { word: { ms: 'LEMBU', en: 'COW' }, emoji: '🐮' },
+      { word: { ms: 'KUDA', en: 'HORSE' }, emoji: '🐎' },
+      { word: { ms: 'ULAR', en: 'SNAKE' }, emoji: '🐍' },
+      { word: { ms: 'KAPAL', en: 'SHIP' }, emoji: '🚢' },
+      { word: { ms: 'VAN', en: 'VAN' }, emoji: '🚐' },
+      { word: { ms: 'BUKU', en: 'BOOK' }, emoji: '📖' },
+      { word: { ms: 'MEJA', en: 'DESK' }, emoji: '🪑' },
+      { word: { ms: 'PEN', en: 'PEN' }, emoji: '🖊️' },
+      { word: { ms: 'DAUN', en: 'LEAF' }, emoji: '🍃' },
+      { word: { ms: 'BUNGA', en: 'ROSE' }, emoji: '🌸' },
+      { word: { ms: 'AWAN', en: 'STAR' }, emoji: '⭐' },
+      { word: { ms: 'HUJAN', en: 'RAIN' }, emoji: '🌧️' },
+      { word: { ms: 'API', en: 'FIRE' }, emoji: '🔥' },
+      { word: { ms: 'NASI', en: 'RICE' }, emoji: '🍚' },
+      { word: { ms: 'OREN', en: 'CAKE' }, emoji: '🍰' },
+      { word: { ms: 'SUSU', en: 'MILK' }, emoji: '🥛' },
+      { word: { ms: 'BURUNG', en: 'BIRD' }, emoji: '🐦' },
+      { word: { ms: 'PISANG', en: 'BANANA' }, emoji: '🍌' },
+      { word: { ms: 'CERI', en: 'CHERRY' }, emoji: '🍒' },
+      { word: { ms: 'NENAS', en: 'LEMON' }, emoji: '🍋' },
+      { word: { ms: 'ZIRAFAH', en: 'ZEBRA' }, emoji: '🦓' }
     ];
     let currentEjaIdx = 0;
     let sortableInstance = null;
@@ -678,17 +1050,19 @@
     function setupDragGame() {
       const item = ejaData[currentEjaIdx];
       const container = document.getElementById('dragContainer');
+      const wordStr = item.word[currentLang];
       document.getElementById('ejaTracker').innerText = `${currentEjaIdx + 1} / ${ejaData.length}`;
       document.getElementById('ejaEmoji').innerText = item.emoji;
       document.getElementById('ejaFeedback').innerText = '';
 
-      const letters = item.word.split('');
+      const targetWord = wordStr.toUpperCase();
+      const letters = targetWord.split('');
       const shuffled = [...letters].sort(() => Math.random() - 0.5);
 
       container.innerHTML = '';
       shuffled.forEach((letChar) => {
         const tile = document.createElement('div');
-        tile.className = "drag-tile w-11 h-12 bg-red-500 text-white rounded-xl font-fun text-xl flex items-center justify-center shadow-md border-b-4 border-red-700 select-none";
+        tile.className = "drag-tile w-10 h-11 bg-red-500 text-white rounded-xl font-fun text-lg flex items-center justify-center shadow-md border-b-4 border-red-700 select-none";
         tile.innerText = letChar;
         container.appendChild(tile);
       });
@@ -701,7 +1075,8 @@
         onEnd: function () { playSoundEffect('correct'); }
       });
 
-      speakTextSlow(`Heret dan susun ejaan ${item.word}`);
+      const promptSpeech = currentLang === 'ms' ? `Heret dan susun ejaan ${wordStr}` : `Drag and spell ${wordStr}`;
+      speakTextSlow(promptSpeech);
     }
 
     function checkDragAnswer() {
@@ -709,18 +1084,20 @@
       const container = document.getElementById('dragContainer');
       const currentWord = Array.from(container.children).map(el => el.innerText).join('');
       const card = document.getElementById('ejaCard');
+      const targetWord = item.word[currentLang].toUpperCase();
+      const t = uiTranslations[currentLang];
 
-      if (currentWord === item.word) {
+      if (currentWord === targetWord) {
         playSoundEffect('correct');
         addStar();
         triggerStarShower();
-        document.getElementById('ejaFeedback').innerHTML = '<span class="animate-pop text-xs text-emerald-600 font-bold bg-white/80 px-3 py-1 rounded-full border border-emerald-300 shadow">🎉 Syabas! Ejaan Betul! ⭐+1</span>';
-        speakTextSlow(`Hebat! Ejaan ${item.word} betul!`);
+        document.getElementById('ejaFeedback').innerHTML = `<span class="animate-pop text-xs text-emerald-600 font-bold bg-white/80 px-3 py-1 rounded-full border border-emerald-300 shadow">${t.msgCorrect}</span>`;
+        speakTextSlow(t.ttsCorrect);
       } else {
         playSoundEffect('wrong');
         card.classList.add('animate-shake');
-        document.getElementById('ejaFeedback').innerHTML = '<span class="text-xs text-red-500 font-bold bg-white/80 px-3 py-1 rounded-full border border-red-300 shadow">❌ Ejaan belum betul, cuba susun lagi!</span>';
-        speakTextSlow('Cuba susun semula adik!');
+        document.getElementById('ejaFeedback').innerHTML = `<span class="text-xs text-red-500 font-bold bg-white/80 px-3 py-1 rounded-full border border-red-300 shadow">${t.msgDragWrong}</span>`;
+        speakTextSlow(t.ttsWrong);
         setTimeout(() => { card.classList.remove('animate-shake'); }, 800);
       }
     }
@@ -728,16 +1105,16 @@
     function nextEja() { if (currentEjaIdx < ejaData.length - 1) { currentEjaIdx++; setupDragGame(); } }
     function prevEja() { if (currentEjaIdx > 0) { currentEjaIdx--; setupDragGame(); } }
 
-    /* ---------------- 6. KUIZ GAMBAR ---------------- */
+    /* ---------------- 7. KUIZ GAMBAR ---------------- */
     const kuizPool = [
-      { name: 'Ayam', emoji: '🐓' },
-      { name: 'Bola', emoji: '⚽' },
-      { name: 'Ikan', emoji: '🐟' },
-      { name: 'Epal', emoji: '🍎' },
-      { name: 'Gajah', emoji: '🐘' },
-      { name: 'Kucing', emoji: '🐱' },
-      { name: 'Singa', emoji: '🦁' },
-      { name: 'Bintang', emoji: '⭐' }
+      { name: { ms: 'Ayam', en: 'Chicken' }, emoji: '🐓' },
+      { name: { ms: 'Bola', en: 'Ball' }, emoji: '⚽' },
+      { name: { ms: 'Ikan', en: 'Fish' }, emoji: '🐟' },
+      { name: { ms: 'Epal', en: 'Apple' }, emoji: '🍎' },
+      { name: { ms: 'Gajah', en: 'Elephant' }, emoji: '🐘' },
+      { name: { ms: 'Kucing', en: 'Cat' }, emoji: '🐱' },
+      { name: { ms: 'Singa', en: 'Lion' }, emoji: '🦁' },
+      { name: { ms: 'Bintang', en: 'Star' }, emoji: '⭐' }
     ];
     let currentCorrectTarget = null;
 
@@ -747,8 +1124,10 @@
       document.getElementById('kuizFeedback').innerText = '';
       const target = kuizPool[Math.floor(Math.random() * kuizPool.length)];
       currentCorrectTarget = target;
+      const t = uiTranslations[currentLang];
+      const targetName = target.name[currentLang];
 
-      document.getElementById('kuizQuestion').innerText = `Di manakah gambar ${target.name}?`;
+      document.getElementById('kuizQuestion').innerText = `${t.kuizAsk} ${targetName}?`;
 
       let choices = [target];
       while (choices.length < 4) {
@@ -768,24 +1147,25 @@
         optionsDiv.appendChild(btn);
       });
 
-      speakTextSlow(`Mana satu gambar ${target.name}?`);
+      speakTextSlow(`${t.kuizAsk} ${targetName}?`);
     }
 
     function checkKuizAnswer(selected) {
-      if (selected.name === currentCorrectTarget.name) {
+      const t = uiTranslations[currentLang];
+      if (selected === currentCorrectTarget) {
         playSoundEffect('correct');
         addStar();
         triggerStarShower();
-        document.getElementById('kuizFeedback').innerHTML = '<span class="animate-pop text-xs text-emerald-600 font-bold bg-white/80 px-3 py-1 rounded-full border border-emerald-300 shadow">🎉 Betul! Bijaknya adik! ⭐+1</span>';
-        speakTextSlow('Betul! Syabas!');
+        document.getElementById('kuizFeedback').innerHTML = `<span class="animate-pop text-xs text-emerald-600 font-bold bg-white/80 px-3 py-1 rounded-full border border-emerald-300 shadow">${t.msgCorrect}</span>`;
+        speakTextSlow(t.ttsCorrect);
       } else {
         playSoundEffect('wrong');
-        document.getElementById('kuizFeedback').innerHTML = '<span class="text-xs text-red-500 font-bold bg-white/80 px-3 py-1 rounded-full border border-red-300 shadow">❌ Alahai, salah. Bakal cuba lagi!</span>';
-        speakTextSlow('Salah, cuba lagi ya!');
+        document.getElementById('kuizFeedback').innerHTML = `<span class="text-xs text-red-500 font-bold bg-white/80 px-3 py-1 rounded-full border border-red-300 shadow">${t.msgWrong}</span>`;
+        speakTextSlow(t.ttsWrong);
       }
     }
 
-    /* ---------------- 7. MATEMATIK ---------------- */
+    /* ---------------- 8. MATEMATIK ---------------- */
     let currentMathAns = 0;
     const mathItemEmojis = ['🍎', '🍌', '⚽', '🚗', '🐥', '⭐'];
 
@@ -795,6 +1175,7 @@
       document.getElementById('mathFeedback').innerText = '';
       const isAddition = Math.random() > 0.3;
       const emoji = mathItemEmojis[Math.floor(Math.random() * mathItemEmojis.length)];
+      const t = uiTranslations[currentLang];
 
       let a, b;
       if (isAddition) {
@@ -802,13 +1183,13 @@
         b = Math.floor(Math.random() * 4) + 1;
         currentMathAns = a + b;
         document.getElementById('mathOp').innerText = '+';
-        document.getElementById('mathTextQuestion').innerText = `${a} + ${b} = Berapa?`;
+        document.getElementById('mathTextQuestion').innerText = `${a} + ${b} = ${t.mathHowMuch}`;
       } else {
         a = Math.floor(Math.random() * 4) + 3;
         b = Math.floor(Math.random() * (a - 1)) + 1;
         currentMathAns = a - b;
         document.getElementById('mathOp').innerText = '-';
-        document.getElementById('mathTextQuestion').innerText = `${a} - ${b} = Berapa?`;
+        document.getElementById('mathTextQuestion').innerText = `${a} - ${b} = ${t.mathHowMuch}`;
       }
 
       document.getElementById('mathVisualA').innerText = emoji.repeat(a);
@@ -836,51 +1217,426 @@
     }
 
     function checkMathAnswer(selectedNum) {
+      const t = uiTranslations[currentLang];
       if (selectedNum === currentMathAns) {
         playSoundEffect('correct');
         addStar();
         triggerStarShower();
-        document.getElementById('mathFeedback').innerHTML = '<span class="animate-pop text-xs text-emerald-600 font-bold bg-white/80 px-3 py-1 rounded-full border border-emerald-300 shadow">🎉 Betul! Jawapan kamu tepat! ⭐+1</span>';
-        speakTextSlow('Pandainya! Jawapan betul!');
+        document.getElementById('mathFeedback').innerHTML = `<span class="animate-pop text-xs text-emerald-600 font-bold bg-white/80 px-3 py-1 rounded-full border border-emerald-300 shadow">${t.msgCorrect}</span>`;
+        speakTextSlow(t.ttsCorrect);
       } else {
         playSoundEffect('wrong');
-        document.getElementById('mathFeedback').innerHTML = '<span class="text-xs text-red-500 font-bold bg-white/80 px-3 py-1 rounded-full border border-red-300 shadow">❌ Salah, kira balik visual gambar di atas ya!</span>';
-        speakTextSlow('Kira semula gambar di atas ya!');
+        document.getElementById('mathFeedback').innerHTML = `<span class="text-xs text-red-500 font-bold bg-white/80 px-3 py-1 rounded-full border border-red-300 shadow">${t.msgMathWrong}</span>`;
+        speakTextSlow(t.ttsWrong);
       }
     }
 
-    /* ---------------- 8. CHAT CIKGU AI ---------------- */
-    function askCikgu() {
-      const inputEl = document.getElementById('userInput');
-      const question = inputEl.value.trim();
-      if (!question) return;
+    
+    /* ---------------- 10. PAPAN MELUKIS & MEWARNA (CANVAS SCRATCHPAD) ---------------- */
+    const drawData = [
+      { title: { ms: 'Huruf A', en: 'Letter A' }, type: 'text', text: 'A' },
+      { title: { ms: 'Huruf B', en: 'Letter B' }, type: 'text', text: 'B' },
+      { title: { ms: 'Huruf C', en: 'Letter C' }, type: 'text', text: 'C' },
+      { title: { ms: 'Huruf D', en: 'Letter D' }, type: 'text', text: 'D' },
+      { title: { ms: 'Huruf E', en: 'Letter E' }, type: 'text', text: 'E' },
+      { title: { ms: 'Nombor 1', en: 'Number 1' }, type: 'text', text: '1' },
+      { title: { ms: 'Nombor 2', en: 'Number 2' }, type: 'text', text: '2' },
+      { title: { ms: 'Nombor 3', en: 'Number 3' }, type: 'text', text: '3' },
+      { title: { ms: 'Nombor 4', en: 'Number 4' }, type: 'text', text: '4' },
+      { title: { ms: 'Nombor 5', en: 'Number 5' }, type: 'text', text: '5' },
+      { title: { ms: 'Bentuk Bulatan', en: 'Circle Shape' }, type: 'shape', shape: 'circle' },
+      { title: { ms: 'Bentuk Segi Empat', en: 'Square Shape' }, type: 'shape', shape: 'square' },
+      { title: { ms: 'Bentuk Segi Tiga', en: 'Triangle Shape' }, type: 'shape', shape: 'triangle' },
+      { title: { ms: 'Bentuk Bintang', en: 'Star Shape' }, type: 'shape', shape: 'star' },
+      { title: { ms: 'Bentuk Hati', en: 'Heart Shape' }, type: 'shape', shape: 'heart' },
+      { title: { ms: 'Mewarna Kucing', en: 'Color Cat' }, type: 'emoji', emoji: '🐱' },
+      { title: { ms: 'Mewarna Epal', en: 'Color Apple' }, type: 'emoji', emoji: '🍎' },
+      { title: { ms: 'Mewarna Ikan', en: 'Color Fish' }, type: 'emoji', emoji: '🐟' },
+      { title: { ms: 'Mewarna Bunga', en: 'Color Flower' }, type: 'emoji', emoji: '🌸' },
+      { title: { ms: 'Mewarna Kereta', en: 'Color Car' }, type: 'emoji', emoji: '🚗' }
+    ];
 
-      const chatHistory = document.getElementById('chatHistory');
-      const userBubble = document.createElement('div');
-      userBubble.className = "bg-purple-500 text-white p-2.5 rounded-2xl text-xs font-semibold max-w-[85%] ml-auto shadow-sm animate-pop";
-      userBubble.innerText = question;
-      chatHistory.appendChild(userBubble);
+    let currentDrawIdx = 0;
+    let isDrawing = false;
+    let drawColor = '#000000';
+    let brushSize = 10;
+    let drawCanvas, drawCtx;
 
-      db.ref('questions').push({ question: question, timestamp: Date.now() });
-      inputEl.value = '';
-
-      setTimeout(() => {
-        let reply = "Wah, soalan yang bagus! Jom belajar bersama Cikgu AI!";
-        const qLower = question.toLowerCase();
-
-        if (qLower.includes('ayam')) reply = "Ayam! A Y A M! 🐓 Ayam jantan berkokok kukuruyuk!";
-        else if (qLower.includes('bola')) reply = "Bola! B O L A! ⚽ Adik suka main bola tak?";
-        else if (qLower.includes('singa')) reply = "Singa! 🦁 Singa ialah raja hutan yang gagah!";
-
-        const aiBubble = document.createElement('div');
-        aiBubble.className = "bg-yellow-100/90 text-slate-800 p-2.5 rounded-2xl text-xs font-semibold max-w-[85%] border border-yellow-300 shadow-sm animate-pop";
-        aiBubble.innerText = reply;
-        chatHistory.appendChild(aiBubble);
-
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-        speakTextSlow(reply);
-      }, 500);
+    function openDraw() {
+      currentDrawIdx = 0;
+      showScreen('draw');
+      setTimeout(initCanvasDraw, 100);
     }
-  </script>
+
+    function initCanvasDraw() {
+      drawCanvas = document.getElementById('drawCanvas');
+      drawCtx = drawCanvas.getContext('2d');
+
+      // Remove existing listeners if any
+      drawCanvas.onmousedown = startDrawing;
+      drawCanvas.onmousemove = drawLine;
+      drawCanvas.onmouseup = stopDrawing;
+      drawCanvas.onmouseleave = stopDrawing;
+
+      drawCanvas.ontouchstart = (e) => { e.preventDefault(); startDrawing(e.touches[0]); };
+      drawCanvas.ontouchmove = (e) => { e.preventDefault(); drawLine(e.touches[0]); };
+      drawCanvas.ontouchend = stopDrawing;
+
+      updateDrawSlide();
+    }
+
+    function updateDrawSlide() {
+      const item = drawData[currentDrawIdx];
+      document.getElementById('drawTracker').innerText = `${currentDrawIdx + 1} / ${drawData.length}`;
+      document.getElementById('drawTitle').innerText = item.title[currentLang];
+
+      clearCanvasDraw();
+      speakCurrentDraw();
+    }
+
+    function speakCurrentDraw() {
+      const item = drawData[currentDrawIdx];
+      speakTextSlow(item.title[currentLang]);
+    }
+
+    function clearCanvasDraw() {
+      if (!drawCtx) return;
+      drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      drawCtx.fillStyle = '#ffffff';
+      drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+
+      drawTracingGuideline();
+    }
+
+    function drawTracingGuideline() {
+      const item = drawData[currentDrawIdx];
+      drawCtx.save();
+
+      if (item.type === 'text') {
+        drawCtx.font = 'bold 160px Fredoka One, sans-serif';
+        drawCtx.fillStyle = '#e2e8f0';
+        drawCtx.textAlign = 'center';
+        drawCtx.textBaseline = 'middle';
+        drawCtx.fillText(item.text, 140, 150);
+
+        // Dashed tracing outline
+        drawCtx.lineWidth = 3;
+        drawCtx.strokeStyle = '#cbd5e1';
+        drawCtx.setLineDash([6, 6]);
+        drawCtx.strokeText(item.text, 140, 150);
+      } else if (item.type === 'shape') {
+        drawCtx.lineWidth = 4;
+        drawCtx.strokeStyle = '#cbd5e1';
+        drawCtx.setLineDash([8, 6]);
+
+        if (item.shape === 'circle') {
+          drawCtx.beginPath();
+          drawCtx.arc(140, 140, 80, 0, Math.PI * 2);
+          drawCtx.stroke();
+        } else if (item.shape === 'square') {
+          drawCtx.strokeRect(60, 60, 160, 160);
+        } else if (item.shape === 'triangle') {
+          drawCtx.beginPath();
+          drawCtx.moveTo(140, 50);
+          drawCtx.lineTo(220, 210);
+          drawCtx.lineTo(60, 210);
+          drawCtx.closePath();
+          drawCtx.stroke();
+        } else if (item.shape === 'star') {
+          drawCtx.font = '160px sans-serif';
+          drawCtx.fillStyle = '#f1f5f9';
+          drawCtx.textAlign = 'center';
+          drawCtx.textBaseline = 'middle';
+          drawCtx.fillText('⭐', 140, 140);
+        } else if (item.shape === 'heart') {
+          drawCtx.font = '160px sans-serif';
+          drawCtx.fillStyle = '#f1f5f9';
+          drawCtx.textAlign = 'center';
+          drawCtx.textBaseline = 'middle';
+          drawCtx.fillText('❤️', 140, 140);
+        }
+      } else if (item.type === 'emoji') {
+        drawCtx.font = '150px sans-serif';
+        drawCtx.fillStyle = '#f1f5f9';
+        drawCtx.textAlign = 'center';
+        drawCtx.textBaseline = 'middle';
+        drawCtx.fillText(item.emoji, 140, 140);
+
+        drawCtx.font = '150px sans-serif';
+        drawCtx.lineWidth = 2;
+        drawCtx.strokeStyle = '#94a3b8';
+        drawCtx.setLineDash([4, 4]);
+        drawCtx.strokeText(item.emoji, 140, 140);
+      }
+
+      drawCtx.restore();
+    }
+
+    function getCanvasCoords(e) {
+      const rect = drawCanvas.getBoundingClientRect();
+      return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+    }
+
+    function startDrawing(e) {
+      isDrawing = true;
+      const coords = getCanvasCoords(e);
+      drawCtx.beginPath();
+      drawCtx.moveTo(coords.x, coords.y);
+    }
+
+    function drawLine(e) {
+      if (!isDrawing) return;
+      const coords = getCanvasCoords(e);
+      drawCtx.lineTo(coords.x, coords.y);
+      drawCtx.strokeStyle = drawColor;
+      drawCtx.lineWidth = brushSize;
+      drawCtx.lineCap = 'round';
+      drawCtx.lineJoin = 'round';
+      drawCtx.stroke();
+    }
+
+    function stopDrawing() {
+      if (isDrawing) {
+        isDrawing = false;
+        drawCtx.closePath();
+      }
+    }
+
+    function setDrawColor(hex) { drawColor = hex; }
+    function setBrushSize(size) { brushSize = size; }
+
+    function nextDraw() { if (currentDrawIdx < drawData.length - 1) { currentDrawIdx++; updateDrawSlide(); } }
+    function prevDraw() { if (currentDrawIdx > 0) { currentDrawIdx--; updateDrawSlide(); } }
+
+    /* ---------------- 11. PENGECAMAN SUARA (SPEECH-TO-TEXT) ---------------- */
+    const voiceData = [
+      { target: { ms: 'Ayam', en: 'Chicken' }, emoji: '🐓' },
+      { target: { ms: 'Bola', en: 'Ball' }, emoji: '⚽' },
+      { target: { ms: 'Ikan', en: 'Fish' }, emoji: '🐟' },
+      { target: { ms: 'Epal', en: 'Apple' }, emoji: '🍎' },
+      { target: { ms: 'Topi', en: 'Hat' }, emoji: '🧢' },
+      { target: { ms: 'Roti', en: 'Bread' }, emoji: '🍞' },
+      { target: { ms: 'Kucing', en: 'Cat' }, emoji: '🐱' },
+      { target: { ms: 'Gajah', en: 'Elephant' }, emoji: '🐘' },
+      { target: { ms: 'Singa', en: 'Lion' }, emoji: '🦁' },
+      { target: { ms: 'Lembu', en: 'Cow' }, emoji: '🐮' },
+      { target: { ms: 'Kuda', en: 'Horse' }, emoji: '🐎' },
+      { target: { ms: 'Ular', en: 'Snake' }, emoji: '🐍' },
+      { target: { ms: 'Buku', en: 'Book' }, emoji: '📖' },
+      { target: { ms: 'Meja', en: 'Desk' }, emoji: '🪑' },
+      { target: { ms: 'Pen', en: 'Pen' }, emoji: '🖊️' },
+      { target: { ms: 'Daun', en: 'Leaf' }, emoji: '🍃' },
+      { target: { ms: 'Bunga', en: 'Flower' }, emoji: '🌸' },
+      { wordTarget: 'A', target: { ms: 'A', en: 'A' }, emoji: '🅰️' },
+      { wordTarget: 'B', target: { ms: 'B', en: 'B' }, emoji: '🅱️' },
+      { wordTarget: 'C', target: { ms: 'C', en: 'C' }, emoji: '🔤' }
+    ];
+
+    let currentVoiceIdx = 0;
+    let recognition = null;
+    let isListening = false;
+
+    function openVoice() {
+      currentVoiceIdx = 0;
+      updateVoiceSlide();
+      showScreen('voice');
+      initVoiceRecognition();
+    }
+
+    function updateVoiceSlide() {
+      const item = voiceData[currentVoiceIdx];
+      const targetStr = item.target[currentLang];
+      document.getElementById('voiceTracker').innerText = `${currentVoiceIdx + 1} / ${voiceData.length}`;
+      document.getElementById('voiceEmoji').innerText = item.emoji;
+      document.getElementById('voiceTargetWord').innerText = targetStr;
+      document.getElementById('voiceFeedback').innerText = '';
+      document.getElementById('voiceTranscript').innerText = uiTranslations[currentLang].micPress;
+      
+      if (isListening && recognition) {
+        recognition.stop();
+        isListening = false;
+        updateMicUI();
+      }
+      speakCurrentVoiceTarget();
+    }
+
+    function speakCurrentVoiceTarget() {
+      const item = voiceData[currentVoiceIdx];
+      speakTextSlow(item.target[currentLang]);
+    }
+
+    function nextVoice() { if (currentVoiceIdx < voiceData.length - 1) { currentVoiceIdx++; updateVoiceSlide(); } }
+    function prevVoice() { if (currentVoiceIdx > 0) { currentVoiceIdx--; updateVoiceSlide(); } }
+
+    function initVoiceRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return;
+
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        isListening = true;
+        updateMicUI();
+        document.getElementById('voiceTranscript').innerText = uiTranslations[currentLang].micListening;
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript.trim();
+        document.getElementById('voiceTranscript').innerText = `"${transcript}"`;
+        checkVoiceAnswer(transcript);
+      };
+
+      recognition.onerror = () => {
+        isListening = false;
+        updateMicUI();
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        updateMicUI();
+      };
+    }
+
+    function toggleVoiceRecognition() {
+      if (!recognition) {
+        alert(uiTranslations[currentLang].micNotSupported);
+        return;
+      }
+
+      if (isListening) {
+        recognition.stop();
+      } else {
+        recognition.lang = currentLang === 'ms' ? 'ms-MY' : 'en-US';
+        recognition.start();
+      }
+    }
+
+    function updateMicUI() {
+      const btn = document.getElementById('btnMicRecord');
+      if (isListening) {
+        btn.classList.add('animate-mic-listening', 'bg-red-500');
+        btn.classList.remove('bg-teal-500');
+      } else {
+        btn.classList.remove('animate-mic-listening', 'bg-red-500');
+        btn.classList.add('bg-teal-500');
+      }
+    }
+
+    function checkVoiceAnswer(spokenText) {
+      const item = voiceData[currentVoiceIdx];
+      const targetStr = item.target[currentLang].toLowerCase();
+      const cleanSpoken = spokenText.toLowerCase();
+      const t = uiTranslations[currentLang];
+
+      if (cleanSpoken.includes(targetStr) || targetStr.includes(cleanSpoken)) {
+        playSoundEffect('correct');
+        addStar();
+        triggerStarShower();
+        document.getElementById('voiceFeedback').innerHTML = `<span class="animate-pop text-xs text-emerald-600 font-bold bg-white/80 px-3 py-1 rounded-full border border-emerald-300 shadow">${t.msgCorrect}</span>`;
+        speakTextSlow(t.ttsCorrect);
+      } else {
+        playSoundEffect('wrong');
+        document.getElementById('voiceFeedback').innerHTML = `<span class="text-xs text-red-500 font-bold bg-white/80 px-3 py-1 rounded-full border border-red-300 shadow">${t.msgWrong}</span>`;
+        speakTextSlow(t.ttsWrong);
+     }
+}
+</script>
+
+<div class="fixed top-4 right-4 z-50 flex items-center gap-2">
+    <audio id="bgMusic" loop>
+        <source src="bombinsound-cartoon.mp3" type="audio/mp3">
+    </audio>
+
+    <button onclick="toggleMusic()" id="musicBtn" class="bg-white/90 hover:bg-white text-gray-700 w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-lg transition border border-gray-200">
+        🎵
+    </button>
+
+    <div class="relative">
+        <button onclick="toggleSettings()" class="bg-white/90 hover:bg-white text-gray-700 w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-lg transition border border-gray-200">
+            ⚙️
+        </button>
+
+        <div id="settingsPanel" class="hidden absolute right-0 mt-2 bg-white p-3 rounded-xl shadow-xl border border-gray-200 w-40 flex flex-col gap-2">
+            <span class="text-xs font-semibold text-gray-600 text-center">Volume Lagu</span>
+            <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5" onchange="changeVolume(this.value)" class="w-full accent-pink-500 cursor-pointer">
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleMusic() {
+        const music = document.getElementById('bgMusic');
+        const btn = document.getElementById('musicBtn');
+        if (music.paused) {
+            music.play();
+            btn.textContent = "🔊";
+            btn.classList.add("bg-pink-100", "border-pink-300");
+        } else {
+            music.pause();
+            btn.textContent = "🎵";
+            btn.classList.remove("bg-pink-100", "border-pink-300");
+        }
+function playAnimalSoundEffect() {
+    const item = animalData[currentAnimalIdx];
+    const soundPath = "audio/" + item.sound;
+    const audio = new Audio(soundPath);
+    audio.play().catch(error => {
+        console.log("Gagal memainkan audio: ", error);
+    });
+}
+    }
+
+    function toggleSettings() {
+        const panel = document.getElementById('settingsPanel');
+        panel.classList.toggle('hidden');
+    }
+
+    function changeVolume(val) {
+        const music = document.getElementById('bgMusic');
+        music.volume = val;
+    }
+function saveUserName() {
+        const input = document.getElementById('userNameInput');
+        const name = input.value.trim();
+
+        if (name === "") {
+            alert("Sila masukkan nama adik dulu ya! 😊");
+            input.focus();
+            return;
+        }
+
+        localStorage.setItem('adikGeniusName', name);
+
+        const modal = document.getElementById('nameModal');
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 300);
+
+        updateGreetingName(name);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedName = localStorage.getItem('adikGeniusName');
+        const modal = document.getElementById('nameModal');
+
+        if (savedName && modal) {
+            modal.style.display = 'none';
+            updateGreetingName(savedName);
+        }
+    });
+
+    function updateGreetingName(name) {
+        const nameDisplay = document.getElementById('displayName');
+        if (nameDisplay) {
+            nameDisplay.textContent = name;
+        }
+    }
+</script>
 </body>
 </html>
