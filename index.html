@@ -1636,6 +1636,39 @@ function saveUserName() {
         if (nameDisplay) {
             nameDisplay.textContent = name;
         }
+      }
+      function checkUserAccess(user) {
+    if (!user || !user.email) return;
+
+    const sanitizedEmail = user.email.replace(/\./g, '_');
+
+    const dbRef = firebase.database().ref('authorized_buyers/' + sanitizedEmail);
+
+    dbRef.once('value').then((snapshot) => {
+        if (snapshot.exists() && snapshot.val() === true) {
+            
+            console.log("Akses dibenarkan untuk:", user.email);
+            
+        } else {
+            
+            alert("Maaf, emel anda tidak berdaftar sebagai pembeli sah. Sila buat pembelian terlebih dahulu.");
+            firebase.auth().signOut(); 
+        }
+    }).catch((error) => {
+        console.error("Ralat menyemak database:", error);
+        alert("Berlaku ralat sistem semasa menyemak akses.");
+    });
+}
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        console.log("Pengguna aktif dikesan:", user.email);
+
+        checkUserAccess(user);
+    } else {
+
+        console.log("Tiada sesi aktif. Sila log masuk.");
+    }
+});
     }
 </script>
 </body>
