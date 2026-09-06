@@ -1658,7 +1658,27 @@ function saveUserName() {
         console.error("Ralat menyemak database:", error);
         alert("Berlaku ralat sistem semasa menyemak akses.");
     });
+ }
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        // Jika sudah log masuk, semak emel dalam database
+        checkUserAccess(user);
+    } else {
+        // Jika belum log masuk, pastikan modal nama/login dipaparkan
+        console.log("Tiada sesi aktif. Sila log masuk.");
+        const nameModal = document.getElementById("nameModal");
+        if (nameModal) nameModal.classList.remove("hidden");
+    }
+});
 
+// 2. Fungsi untuk butang Log Masuk Google (jika anda mahu guna butang Google)
+function loginDenganGoogle() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).catch((error) => {
+        console.error("Ralat log masuk:", error.message);
+        alert("Gagal log masuk: " + error.message);
+    });
+}
     }
 </script>
 </body>
