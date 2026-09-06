@@ -1658,17 +1658,7 @@ function saveUserName() {
         console.error("Ralat menyemak database:", error);
         alert("Berlaku ralat sistem semasa menyemak akses.");
     });
-}
-  firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        console.log("Pengguna aktif dikesan:", user.email);
 
-        checkUserAccess(user);
-    } else {
-
-        console.log("Tiada sesi aktif. Sila log masuk.");
-    }
-});
     }
 </script>
 </body>
