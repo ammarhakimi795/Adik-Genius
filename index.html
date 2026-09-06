@@ -1601,26 +1601,41 @@ function playAnimalSoundEffect() {
         music.volume = val;
     }
 function saveUserName() {
-        const input = document.getElementById('userNameInput');
-        const name = input.value.trim();
+    const input = document.getElementById('userNameInput');
+    const inputEmail = input.value.trim().toLowerCase();
 
-        if (name === "") {
-            alert("Sila masukkan nama adik dulu ya! 😊");
-            input.focus();
-            return;
-        }
-
-        localStorage.setItem('adikGeniusName', name);
-
-        const modal = document.getElementById('nameModal');
-        modal.classList.add('opacity-0', 'pointer-events-none');
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 300);
-
-        updateGreetingName(name);
+    if (inputEmail === "") {
+        alert("Sila masukkan alamat emel anda! 📧");
+        input.focus();
+        return;
     }
 
+    // Tukar titik kepada underscore kerana Firebase tak benarkan titik dalam key
+    const sanitizedEmail = inputEmail.replace(/\./g, '_');
+    const dbRef = firebase.database().ref('authorized_buyers/' + sanitizedEmail);
+
+    dbRef.once('value').then((snapshot) => {
+        if (snapshot.exists() && snapshot.val() === true) {
+            // JIKA SAH: Simpan dalam pelayar dan buka aplikasi
+            localStorage.setItem('adikGeniusEmail', inputEmail);
+
+            const modal = document.getElementById('nameModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+
+            updateGreetingName(inputEmail);
+            alert("Akses berjaya! Selamat belajar Adik Genius 🎈");
+        } else {
+            // JIKA TIDAK SAH / BELUM BAYAR
+            alert("Maaf, emel ini tidak berdaftar sebagai pembeli sah. Sila buat pembelian terlebih dahulu.");
+        }
+    }).catch((error) => {
+        console.error("Ralat menyemak database:", error);
+        alert("Berlaku ralat sistem semasa menyemak akses.");
+    });
+}
     window.addEventListener('DOMContentLoaded', () => {
         const savedName = localStorage.getItem('adikGeniusName');
         const modal = document.getElementById('nameModal');
